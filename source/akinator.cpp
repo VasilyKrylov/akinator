@@ -24,7 +24,9 @@ int AskFinal        (tree_t *tree, node_t *node);
 bool IsLeaf         (node_t *node);
 int AddNewCharacter (tree_t *tree, node_t *node, char *userCharacter, char *newQuestion);
 int DescribeObject  (tree_t *tree);
-
+int FindCharacter   (node_t *node, 
+                     stack_t *currentPath, stack_t *rightPath,
+                     char *character);
 // getchar looks bad, but it needs to catch \n
 #define SAFE_READ_LINE(str)                                                             \
         do                                                                          \
@@ -56,7 +58,7 @@ int AkinatorMenu (tree_t *tree)
                         "\t[0] - Выйти с сохранением\n"
                         "\t[1] - Выйти без сохранения\n"
                         "\t[2] - Угадать персонажа\n"
-                        "\t[3] - Дать определение объекту\n"
+                        // "\t[3] - Дать определение объекту\n"
                         " > ");
         
         int action = -1;
@@ -138,7 +140,7 @@ int AskQuestion (tree_t *tree, node_t *node)
     }
     else if (answer == USER_UKNOWN)
     {
-        ERROR_PRINT ("%s", "Ты дурак? Сказали же, Y/y или N/n ввести\n");
+        ERROR_PRINT ("%s", "Вы, сударь, несколько ошиблись. Нужно ввести Y/y или N/n\n");
 
         AskQuestion (tree, node);
 
@@ -194,7 +196,7 @@ int AskFinal (tree_t *tree, node_t *node)
     }
     else if (answer == USER_NO)
     {
-        printf ("%s", "Кого ты загадал?\n"
+        printf ("%s", "Кого Вы загадали?\n"
                       " > ");
 
         char *userCharacter = NULL;
@@ -212,7 +214,7 @@ int AskFinal (tree_t *tree, node_t *node)
     }
     else if (answer == USER_UKNOWN)
     {
-        ERROR_PRINT ("%s", "Ты дурак? Сказали же, Y/y или N/n ввести\n");
+        ERROR_PRINT ("%s", "Вы, сударь, несколько ошиблись. Нужно ввести Y/y или N/n\n");
         
         AskFinal (tree, node);
 
@@ -276,8 +278,8 @@ int DescribeObject (tree_t *tree)
 {
     assert (tree);
 
-    printf ("%s", "Кого ты загадал?\n"
-                " > ");
+    printf ("%s", "Кого Вы загадали?\n"
+                  " > ");
 
     char *character = NULL;
     SAFE_READ_LINE (character);
@@ -308,5 +310,7 @@ int FindCharacter (node_t *node,
 
     }
 
-    if (node->left)
+    // if (node->left)
+
+    return TREE_OK;
 }

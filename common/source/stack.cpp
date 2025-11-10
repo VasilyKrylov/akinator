@@ -43,7 +43,7 @@ size_t GetCapacity (stack_t *stack)
 
 void StackPrintError (int error)
 {
-    DEBUG ("error = %d\n", error);
+    DEBUG_LOG ("error = %d\n", error);
 
     if (error == 0) return;
 

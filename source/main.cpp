@@ -10,10 +10,10 @@
 int main()
 {
     tree_t tree;
-    TREE_CTOR (tree, strdup("Животное"));
+    TREE_CTOR (tree, strdup("животное"));
 
     node_t *l1 = NodeCtor (strdup("Полторашка"));
-    node_t *r1 = NodeCtor (strdup("Любит много спать"));
+    node_t *r1 = NodeCtor (strdup("любит много спать"));
     node_t *l2 = NodeCtor (strdup("Вадим"));
     node_t *r2 = NodeCtor (strdup("Вова"));
     tree.size = 5;

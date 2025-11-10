@@ -1,6 +1,7 @@
 CPP_FILES = common/source/debug.cpp 		\
-			common/source/utils.cpp 	\
+			common/source/utils.cpp 		\
 			common/source/float_math.cpp 	\
+			common/source/stack.cpp 		\
 			source/tree.cpp 				\
 			source/tree_log.cpp 			\
 			source/akinator.cpp 			\
