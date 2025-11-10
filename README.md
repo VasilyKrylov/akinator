@@ -5,5 +5,5 @@ Akinator
 [\*] Enum for akinator errors? \
 [ ] Write FindCharacter()
 # OPTIONAL: 
-[ ] Colors for program output text
+[ ] Colors for program output text \
 [ ] HTML labels 
