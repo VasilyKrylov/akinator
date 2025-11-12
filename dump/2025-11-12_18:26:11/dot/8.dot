@@ -1,8 +1,0 @@
-digraph G {
-	node [shape=octagon; style="filled"; fillcolor="#ff8080"];
-	node0x7b99e9be0250 [shape=Mrecord; style="filled"; fillcolor="#66ccff"; label = "{\"ловит мышей"("Полторашка"nilnil)("таракан"nilnil))("любит много спать"("занимается ИИ"("Вадим"nilnil)("Василий"nilnil))("Вова"nilnil)))\" | ptr = [0x7b99e9be0250] | left = [0x7b99e9be0280] | right = [0x7b99e9be02b0] }"];
-	node0x7b99e9be0250->node0x7b99e9be0280 [label = "Да"]
-	node0x7b99e9be0280 [shape=Mrecord; style="filled"; fillcolor="#66ccff"; label = "{\"Полторашка"nilnil)("таракан"nilnil))("любит много спать"("занимается ИИ"("Вадим"nilnil)("Василий"nilnil))("Вова"nilnil)))\" | ptr = [0x7b99e9be0280] | left = [(nil)] | right = [(nil)] }"];
-	node0x7b99e9be0250->node0x7b99e9be02b0 [label = "Нет"];
-	node0x7b99e9be02b0 [shape=Mrecord; style="filled"; fillcolor="#66ccff"; label = "{\"таракан"nilnil))("любит много спать"("занимается ИИ"("Вадим"nilnil)("Василий"nilnil))("Вова"nilnil)))\" | ptr = [0x7b99e9be02b0] | left = [(nil)] | right = [(nil)] }"];
-}

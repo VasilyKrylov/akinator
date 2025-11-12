@@ -1,8 +1,0 @@
-digraph G {
-	node [shape=octagon; style="filled"; fillcolor="#ff8080"];
-	node0x7bd8847e0220 [shape=Mrecord; style="filled"; fillcolor="#66ccff"; label = "{\"ловит мышей\" | ptr = [0x7bd8847e0220] | left = [0x7bd8847e0250] | right = [0x7bd8847e0280] }"];
-	node0x7bd8847e0220->node0x7bd8847e0250 [label = "Да"]
-	node0x7bd8847e0250 [shape=Mrecord; style="filled"; fillcolor="#66ccff"; label = "{\"Полторашка\" | ptr = [0x7bd8847e0250] | left = [(nil)] | right = [(nil)] }"];
-	node0x7bd8847e0220->node0x7bd8847e0280 [label = "Нет"];
-	node0x7bd8847e0280 [shape=Mrecord; style="filled"; fillcolor="#66ccff"; label = "{\"собака\" | ptr = [0x7bd8847e0280] | left = [(nil)] | right = [(nil)] }"];
-}
