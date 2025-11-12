@@ -1,0 +1,4 @@
+digraph G {
+	node [shape=octagon; style="filled"; fillcolor="#ff8080"];
+	node0x7b3b62be0040 [shape=Mrecord; style="filled"; fillcolor="#66ccff"; label = "{\"(null)\" | ptr = [0x7b3b62be0040] | left = [(nil)] | right = [(nil)] }"];
+}

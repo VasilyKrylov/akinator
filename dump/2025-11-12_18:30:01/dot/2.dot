@@ -1,0 +1,4 @@
+digraph G {
+	node [shape=octagon; style="filled"; fillcolor="#ff8080"];
+	node0x7b94071e0220 [shape=Mrecord; style="filled"; fillcolor="#66ccff"; label = "{\"животное\" | ptr = [0x7b94071e0220] | left = [(nil)] | right = [(nil)] }"];
+}

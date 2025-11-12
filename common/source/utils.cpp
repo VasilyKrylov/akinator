@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <ctype.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <string.h>
@@ -107,7 +108,7 @@ char *SkipSpaces (char *buffer)
 {
     assert (buffer);
 
-    while (*buffer == ' ')
+    while (isspace (*buffer))
         buffer++;
 
     return buffer;

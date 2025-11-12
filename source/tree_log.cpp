@@ -83,20 +83,20 @@ int LogInit (treeLog_t *log)
 }
 
 int NodeDump (node_t *node, treeLog_t *log,
-              const char *FILE_, int LINE_, const char *FUNC_,
+              const char *file, int line, const char *func,
               const char *format, ...)
 {
     assert(node);
     assert(log);
-    assert(FILE_);
-    assert(FUNC_);
+    assert(file);
+    assert(func);
     assert(format);
 
     fprintf (log->logFile,
              "<h3>NODE DUMP called at %s:%d:%s(): <font style=\"color: green;\">",
-             FILE_, LINE_, FUNC_);
+             file, line, func);
 
-    va_list args;
+    va_list args = {};
     va_start (args, format);
     vfprintf (log->logFile, format, args);
     va_end   (args);
@@ -113,19 +113,19 @@ int NodeDump (node_t *node, treeLog_t *log,
 }
 
 int TreeDump (tree_t *tree, const char *comment,
-              const char *FILE_, int LINE_, const char *FUNC_)
+              const char *file, int line, const char *func)
 {
     assert(tree);
     assert(comment);
-    assert(FILE_);
-    assert(FUNC_);
+    assert(file);
+    assert(func);
     
     DEBUG_PRINT ("%s", "\n");
     DEBUG_LOG ("comment = \"%s\";", comment);
 
     fprintf (tree->log.logFile,
              "<h3>TREE DUMP called at %s:%d:%s(): <font style=\"color: green;\">%s</font></h3>\n",
-             FILE_, LINE_, FUNC_, comment);
+             file, line, func, comment);
     fprintf (tree->log.logFile,
              "%s[%p] initialized in {%s:%d}\n",
              tree->varInfo.name, tree, tree->varInfo.file, tree->varInfo.line);
@@ -152,7 +152,7 @@ int TreeDumpImg (node_t *node, treeLog_t *log)
     return TREE_OK;
 }
 
-void LeftRootRight (node_t *node, FILE *graphFile)
+void LeftRootRight (node_t *node, FILE *graphFile) // TODO rename 
 {
     assert (node);
     assert (graphFile);

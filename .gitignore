@@ -3,4 +3,3 @@ tmp*
 *.out
 .vscode/*
 tree.txt
-*.txt

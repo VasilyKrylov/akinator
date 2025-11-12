@@ -1,0 +1,4 @@
+digraph G {
+	node [shape=octagon; style="filled"; fillcolor="#ff8080"];
+	node0x7bb912de0340 [shape=Mrecord; style="filled"; fillcolor="#66ccff"; label = "{\"Василий\" | ptr = [0x7bb912de0340] | left = [(nil)] | right = [(nil)] }"];
+}

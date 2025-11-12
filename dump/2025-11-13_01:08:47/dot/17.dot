@@ -1,0 +1,12 @@
+digraph G {
+	node [shape=octagon; style="filled"; fillcolor="#ff8080"];
+	node0x7b8d7b7e02b0 [shape=Mrecord; style="filled"; fillcolor="#66ccff"; label = "{\"любит много спать\" | ptr = [0x7b8d7b7e02b0] | left = [0x7b8d7b7e02e0] | right = [0x7b8d7b7e0370] }"];
+	node0x7b8d7b7e02b0->node0x7b8d7b7e02e0 [label = "Да"]
+	node0x7b8d7b7e02e0 [shape=Mrecord; style="filled"; fillcolor="#66ccff"; label = "{\"занимается ИИ\" | ptr = [0x7b8d7b7e02e0] | left = [0x7b8d7b7e0310] | right = [0x7b8d7b7e0340] }"];
+	node0x7b8d7b7e02e0->node0x7b8d7b7e0310 [label = "Да"]
+	node0x7b8d7b7e0310 [shape=Mrecord; style="filled"; fillcolor="#66ccff"; label = "{\"Вадим\" | ptr = [0x7b8d7b7e0310] | left = [(nil)] | right = [(nil)] }"];
+	node0x7b8d7b7e02e0->node0x7b8d7b7e0340 [label = "Нет"];
+	node0x7b8d7b7e0340 [shape=Mrecord; style="filled"; fillcolor="#66ccff"; label = "{\"Василий\" | ptr = [0x7b8d7b7e0340] | left = [(nil)] | right = [(nil)] }"];
+	node0x7b8d7b7e02b0->node0x7b8d7b7e0370 [label = "Нет"];
+	node0x7b8d7b7e0370 [shape=Mrecord; style="filled"; fillcolor="#66ccff"; label = "{\"Вова\" | ptr = [0x7b8d7b7e0370] | left = [(nil)] | right = [(nil)] }"];
+}

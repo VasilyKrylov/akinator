@@ -12,14 +12,14 @@
 
 #include "tree.h"
 
-int TreeCountNodes (node_t *node, size_t size, size_t *nodesCount);
-node_t *TreeLoadNode (char *buffer, char **curPos
-                      ON_DEBUG(, treeLog_t *treeLog));
+int TreeCountNodes (node_t *node, size_t size, size_t *nodesCount); // FIXME static
+node_t *TreeLoadNode (tree_t *tree, 
+                      char *buffer, char **curPos);
 
 // maybe: pass varInfo here for ERROR_LOG
-node_t *NodeCtor (char *data)
+node_t *NodeCtor (tree_t *tree)
 {
-    // assert (data);
+    assert (tree);
 
     node_t *node = (node_t *) calloc (1, sizeof(node_t));
     if (node == NULL)
@@ -29,30 +29,39 @@ node_t *NodeCtor (char *data)
         return NULL;
     }
 
-    node->data = data;
+    tree->size += 1;
+
+    node->data = NULL;
     node->left = NULL;
     node->right = NULL;
+    node->dynamicAllocated = 0;
 
     return node;
 }
+void NodeFill (node_t *node, char *data)
+{
+    assert (node);
+    assert (data);
 
-int TreeCtor (tree_t *tree, char *data
+    // NOTE: check node->data or not?
+
+    node->data = data;
+}
+
+int TreeCtor (tree_t *tree
               ON_DEBUG (, varInfo_t varInfo))
 {
     assert (tree);
 
-    tree->root = NodeCtor (data);
+    tree->root = NULL;
 
-#ifdef PRINT_DEBUG
-    tree->varInfo = varInfo;
+    ON_DEBUG(
+        tree->varInfo = varInfo;
 
-    int status = LogInit (&tree->log);
-    if (status != TREE_OK)
-        return status;
-
-#endif // PRING_DEBUG
-
-    TREE_DUMP (tree, "After ctor");
+        int status = LogInit (&tree->log);
+        if (status != TREE_OK)
+            return status;
+    );
 
     return TREE_VERIFY (tree);
 }
@@ -94,6 +103,7 @@ void TreeDtor (tree_t *tree)
 //     }
 // }
 
+// TODO: занулять информацию и использовать это вместо isValid
 void TreeDelete (node_t *node)
 {
     assert (node);
@@ -109,9 +119,10 @@ void TreeDelete (node_t *node)
         TreeDelete (node->right);
     }
 
-    free (node->data);
+    if (node->dynamicAllocated)
+        free (node->data);
+    
     free (node);
-
     node = NULL;
 }
 
@@ -182,93 +193,85 @@ int NodeSaveToFile (node_t *node, FILE *file)
     if (node->left != NULL)
         NodeSaveToFile (node->left, file);
     else
-        fprintf (file, "%s", " nil");
+        fprintf (file, "%s", "nil");
 
     if (node->right != NULL)
         NodeSaveToFile (node->right, file);
     else
-        fprintf (file, "%s", " nil");
+        fprintf (file, "%s", "nil");
 
     fprintf (file, "%s", ")");
 
     return TREE_OK;
 }
 
-// check if error really occured
-#define SAFE_READ_CHAR(charVar, file) \
-    do {                                                    \
-        charVar = fgetc (file);                             \
-        if (charVar < 0)                                    \
-        {                                                   \
-            ERROR_PRINT ("Error reading user input - %s",   \
-                         strerror (errno));                 \
-                                                            \
-            return TREE_ERROR_COMMON |                      \
-                   COMMON_ERROR_READING_INPUT;              \
-        }                                                   \
-    } while (0)
 
-int TreeLoadFromFile (tree_t *tree, const char *fileName)
+int TreeLoadFromFile (tree_t *tree, const char *fileName, char **buffer)
 {
     assert (tree);
     assert (fileName);
 
+    DEBUG_LOG ("\n========== LOADING TREE FROM \"%s\" ==========\n", fileName);
+
+    if (tree->root != NULL)
+        return TREE_ERROR_LOAD_INTO_NOT_EMPTY;
+    // NOTE: какое нам дерево сюда приходит? Сконструированное или нет
     // TreeDtor (tree);
     // TREE_CTOR (tree, NULL);
-
+    
     size_t bufferLen = 0;
-    char *buffer = ReadFile (fileName, &bufferLen);
+    *buffer = ReadFile (fileName, &bufferLen);
     if (buffer == NULL)
     {
         return TREE_ERROR_COMMON |
-               COMMON_ERROR_READING_FILE;
+        COMMON_ERROR_READING_FILE;
     }
-    char *curPos = buffer;
-
-    DEBUG_LOG ("\n========== LOADING TREE FROM \"%s\" ==========\n", fileName);
-    DEBUG_LOG ("buffer = \'%s\';", buffer);
+    char *curPos = *buffer;
+    DEBUG_LOG ("buffer = \'%s\';", *buffer);
     
-    free (tree->root);
-    tree->root = TreeLoadNode (buffer, &curPos 
-                               ON_DEBUG(, &tree->log));
+    tree->root = TreeLoadNode (tree, *buffer, &curPos);
 
     if (tree->root == NULL)
         return TREE_ERROR_SAVE_FILE_SYNTAX;
-    
-    free (buffer);
 
     return TREE_OK;
 }
 
 
 // file must begin with '(', I don't see any problem with it
-node_t *TreeLoadNode (char *buffer, char **curPos
-                      ON_DEBUG(, treeLog_t *treeLog))
+// TODO: make a new function
+node_t *TreeLoadNode (tree_t *tree, // node_t * node
+                      char *buffer, char **curPos)
 {
     if (**curPos == '(')
     {
         (*curPos)++;
 
         int readBytes = 0;
-        char *data = NULL;
-        sscanf (*curPos, "\"%m[^\"]\"%n", &data, &readBytes);
+        char *data = *curPos + 1; // + 1 to get after "
+        node_t *node = NodeCtor (tree); 
+        NodeFill (node, data);
+        node->dynamicAllocated = 0;
+
+        sscanf (*curPos, "\"%*[^\"]\"%n", &readBytes); // NOTE: make version without this sscanf
+        (*curPos)[readBytes - 1] = 0;
+
+        DEBUG_VAR ("%s", data);
+
         *curPos += readBytes;
 
-        node_t *node = NodeCtor (data); // to get after "
         if (node == NULL)
             return NULL; // FIXME: how to catch this error?
         
-        NODE_DUMP (node, treeLog, "Created new node - \"%s\". \ncurPos = \'%s\'", data, *curPos);
+        NODE_DUMP (node, &tree->log, "Created new node - \"%s\". \ncurPos = \'%s\'", *curPos + 1, *curPos);
 
-        node->left = TreeLoadNode (buffer, curPos
-                                   ON_DEBUG(, treeLog));
+        node->left = TreeLoadNode (tree, buffer, curPos);
         if (node->left != NULL)
-            NODE_DUMP (node->left, treeLog, "After creating left subtree. \ncurPos = \'%s\'", *curPos);
+            NODE_DUMP (node->left, &tree->log, "After creating left subtree. \ncurPos = \'%s\'", *curPos);
         
-        node->right = TreeLoadNode (buffer, curPos
-                                    ON_DEBUG(, treeLog));
+        node->right = TreeLoadNode (tree, buffer, curPos);
         if (node->right != NULL)
-            NODE_DUMP (node->right, treeLog, "After creating right subtree. \ncurPos = \'%s\'", *curPos);
+            NODE_DUMP (node->right, &tree->log, "After creating right subtree. \ncurPos = \'%s\'", *curPos);
 
             
         if (**curPos != ')')
@@ -296,49 +299,3 @@ node_t *TreeLoadNode (char *buffer, char **curPos
     }
 }
 
-
-
-
-
-// int TreeLoadNode (node_t *node, FILE *file)
-// {
-//     assert (node);
-//     assert (file);
-
-//     // NOTE: make a macro
-//     int nodeStart = fgetc (file);
-//     SAFE_READ_CHAR (nodeStart, file);
-
-//     if (nodeStart == '"') // looks horrible
-//     {
-//         int res = fscanf (file, "%m[^\"]%*c", &node->data);
-//         DEBUG_LOG ("res - %d", res);
-//         if (res != 1)
-//         {
-//             if (ferror (file))
-//                 ERROR_PRINT ("Error reading user input - %s", strerror (errno));
-//             else
-//                 ERROR_PRINT ("%s", "Not correct string in tree dump file");
-
-//             return TREE_ERROR_COMMON |
-//                    COMMON_ERROR_READING_INPUT;
-//         }
-//     }
-
-
-//     int leftNodeStart = 0;
-//     SAFE_READ_CHAR (leftNodeStart, file);
-
-//     if (nodeStart == '(')
-//     {
-//         node->left = NodeCtor (NULL);
-//         if (node->left == NULL)
-//             return TREE_ERROR_COMMON |
-//                    COMMON_ERROR_REALLOCATING_MEMORY;
-        
-//         TreeLoadNode (node->left, file);
-
-//         return TREE_ERROR_INVALID_SAVE_FILE;
-//     }
-    
-// }

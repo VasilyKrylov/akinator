@@ -1,0 +1,4 @@
+digraph G {
+	node [shape=octagon; style="filled"; fillcolor="#ff8080"];
+	node0x7b34da1e02e0 [shape=Mrecord; style="filled"; fillcolor="#66ccff"; label = "{\"занимается ИИ\" | ptr = [0x7b34da1e02e0] | left = [(nil)] | right = [(nil)] }"];
+}

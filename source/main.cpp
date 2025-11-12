@@ -10,7 +10,7 @@
 int main()
 {
     tree_t tree = {};
-    TREE_CTOR (&tree, NULL);
+    TREE_CTOR (&tree);
 
     // node_t *l1 = NodeCtor (strdup("Полторашка"));
     // node_t *r1 = NodeCtor (strdup("любит много спать"));
@@ -29,14 +29,26 @@ int main()
 
     // TREE_DUMP (&tree, "After hand assigning");
 
-    TreeLoadFromFile (&tree, treeSaveFileName);
+    char *buffer = NULL;
+    int status = TreeLoadFromFile (&tree, treeSaveFileName, &buffer);
+    if (status != TREE_OK)
+    {
+        TreeDtor (&tree);
+        free (buffer);
+        buffer = NULL;
+
+        return status;
+    }
+
     TREE_DUMP (&tree, "After loading from text file");
 
-    // AkinatorMenu (&tree);
+    AkinatorMenu (&tree);
 
     // r2->right = tree.root;
     // ON_DEBUG (int res = TreeVerify (&tree));
     // DEBUG_LOG ("verify res = %d;", res);
 
     TreeDtor (&tree);
+    free (buffer);
+    buffer = NULL;
 }

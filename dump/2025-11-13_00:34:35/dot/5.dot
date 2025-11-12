@@ -1,0 +1,4 @@
+digraph G {
+	node [shape=octagon; style="filled"; fillcolor="#ff8080"];
+	node0x7bd8847e0280 [shape=Mrecord; style="filled"; fillcolor="#66ccff"; label = "{\"собака\" | ptr = [0x7bd8847e0280] | left = [(nil)] | right = [(nil)] }"];
+}
