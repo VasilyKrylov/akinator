@@ -29,7 +29,7 @@ enum commonErrors
     COMMON_ERROR_OPENING_FILE           = 1 << 2,
     COMMON_ERROR_NULL_POINTER           = 1 << 3,
     COMMON_ERROR_READING_INPUT          = 1 << 4,
-    COMMON_ERROR_GETLINE                = 1 << 5, // FIXME: delete GETLINE error
+    COMMON_ERROR_READING_FILE           = 1 << 5, // FIXME: delete GETLINE error
     COMMON_ERROR_WRITE_TO_FILE          = 1 << 6,
     COMMON_ERROR_TO_EARLY_EOF           = 1 << 7,
     COMMON_ERROR_CREATING_FILE          = 1 << 8,

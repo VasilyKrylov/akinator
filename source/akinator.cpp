@@ -27,8 +27,8 @@ int DescribeObject  (tree_t *tree);
 int FindCharacter   (node_t *node, 
                      stack_t *currentPath, stack_t *rightPath,
                      char *character);
-// getchar looks bad, but it needs to catch \n
-#define SAFE_READ_LINE(str)                                                             \
+// %*c looks bad, but it needs to catch \n
+#define SAFE_READ_LINE(str)                                                         \
         do                                                                          \
         {                                                                           \
             int res = scanf ("%m[^\n]%*c", &str);                                   \
@@ -75,7 +75,7 @@ int AkinatorMenu (tree_t *tree)
         switch (action)
         {
             case 0:
-                TreeSaveToFile (tree);
+                TreeSaveToFile (tree, treeSaveFileName);
                 return TREE_OK;
 
             case 1:
@@ -96,7 +96,7 @@ int AkinatorMenu (tree_t *tree)
         }
     }
 
-    return TREE_OK;
+    return TREE_VERIFY (tree);
 }
 
 int GuessCharacter (tree_t *tree)
@@ -105,7 +105,7 @@ int GuessCharacter (tree_t *tree)
 
     AskQuestion (tree, tree->root);
 
-    return AKINATOR_OK;
+    return TREE_VERIFY (tree);
 }
 
 int AskQuestion (tree_t *tree, node_t *node)
@@ -126,8 +126,7 @@ int AskQuestion (tree_t *tree, node_t *node)
     int answer = AskYesOrNo();
 
     if (answer == USER_YES)
-    {   
-        // check for null ?
+    {
         AskQuestion (tree, node->left);
 
         return AKINATOR_OK;
@@ -151,7 +150,7 @@ int AskQuestion (tree_t *tree, node_t *node)
         return answer; // some error code here
     }
 
-    return AKINATOR_OK;
+    return TREE_VERIFY (tree);
 }
 
 
@@ -225,7 +224,7 @@ int AskFinal (tree_t *tree, node_t *node)
         return answer; // some error code here
     }
 
-    return AKINATOR_OK;
+    return TREE_VERIFY (tree);
 }
 
 bool IsLeaf (node_t *node)
@@ -271,7 +270,7 @@ int AddNewCharacter (tree_t *tree, node_t *node, char *userCharacter, char *newQ
 
     tree->size += 2;
 
-    return TREE_OK;
+    return TREE_VERIFY (tree);
 }
 
 int DescribeObject (tree_t *tree)
@@ -290,7 +289,7 @@ int DescribeObject (tree_t *tree)
     stack_t rightPath = {};
     STACK_CREATE (&rightPath, tree->size);
 
-    return TREE_OK;
+    return TREE_VERIFY (tree);
 }
 
 // NOTE: hash will be in future version, ded

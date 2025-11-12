@@ -1,6 +1,7 @@
 #ifndef K_TREE_LOG_H
 #define K_TREE_LOG_H
 
+struct node_t;
 struct tree_t;
 
 const char kParentDumpFolderName[] = "dump/";
@@ -25,5 +26,8 @@ struct treeLog_t
 int LogInit             (treeLog_t *log);
 int TreeDump            (tree_t *tree, const char *comment,
                          const char *_FILE, int _LINE, const char * _FUNC);
+int NodeDump            (node_t *node, treeLog_t *log,
+                         const char *FILE_, int LINE_, const char *FUNC_,
+                         const char *format, ...);
 
 #endif // K_TREE_LOG_H

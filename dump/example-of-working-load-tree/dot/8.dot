@@ -1,0 +1,8 @@
+digraph G {
+	node [shape=octagon; style="filled"; fillcolor="#ff8080"];
+	node0x7b80ae7e02b0 [shape=Mrecord; style="filled"; fillcolor="#66ccff"; label = "{\"ловит мышей\" | ptr = [0x7b80ae7e02b0] | left = [0x7b80ae7e0310] | right = [0x7b80ae7e0340] }"];
+	node0x7b80ae7e02b0->node0x7b80ae7e0310 [label = "Да"]
+	node0x7b80ae7e0310 [shape=Mrecord; style="filled"; fillcolor="#66ccff"; label = "{\"Полторашка\" | ptr = [0x7b80ae7e0310] | left = [(nil)] | right = [(nil)] }"];
+	node0x7b80ae7e02b0->node0x7b80ae7e0340 [label = "Нет"];
+	node0x7b80ae7e0340 [shape=Mrecord; style="filled"; fillcolor="#66ccff"; label = "{\"таракан\" | ptr = [0x7b80ae7e0340] | left = [(nil)] | right = [(nil)] }"];
+}

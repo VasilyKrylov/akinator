@@ -11,7 +11,7 @@ typedef double treeDataType;
 const size_t kMaxCommentLen         = 64;
 const size_t kTreeMaxLen            = (1UL << 32);
 
-const char treeFileName[]           = "tree.txt";
+const char treeSaveFileName[]       = "tree.txt";
 
 #define TREE_DO_AND_CHECK(action)           \
         do                                  \
@@ -39,6 +39,7 @@ const char treeFileName[]           = "tree.txt";
 
 #ifdef PRINT_DEBUG
 
+// NOTE Change name to VarInfoTree_t (?)
 struct varInfo_t
 {
     const char *name = NULL;
@@ -46,19 +47,23 @@ struct varInfo_t
     int line         = 0;
     const char *func = NULL;
 };
-#define TREE_CTOR(treeName, data) TreeCtor (&treeName, data,                        \
+#define TREE_CTOR(treeName, data) TreeCtor (treeName, data,                         \
                                             varInfo_t{.name = #treeName,            \
                                                       .file = __FILE__,             \
                                                       .line = __LINE__,             \
                                                       .func = __func__})
 #define TREE_DUMP(treeName, comment) TreeDump (treeName, comment, __FILE__, __LINE__, __func__)
+#define NODE_DUMP(nodeName, treeLog, format, ...) NodeDump (nodeName, treeLog,              \
+                                                            __FILE__, __LINE__, __func__,   \
+                                                            format, __VA_ARGS__)
 
-#define TREE_VERIFY(tree) TREE_OK; // FIXME
+#define TREE_VERIFY(tree) TreeVerify (tree); // FIXME
 #else
 
-#define TREE_CTOR(treeName, data) TreeCtor (&treeName, data) // NOTE: removed ;
+#define TREE_CTOR(treeName, data) TreeCtor (treeName, data) // NOTE: removed ;
 #define TREE_VERIFY(tree) TREE_OK;
 #define TREE_DUMP(tree, comment) 
+#define NODE_DUMP(nodeName, treeLog, format, ...) 
 
 #endif // PRING_DEBUG
 
@@ -90,9 +95,11 @@ enum treeError_t
     TREE_OK                             = 0,
     TREE_ERROR_NULL_STRUCT              = 1 << 0,
     TREE_ERROR_NULL_ROOT                = 1 << 1,
-    TREE_ERROR_NOT_ENOUGH_NODES         = 1 << 2,
-    TREE_ERROR_TO_MUCH_NODES            = 1 << 3,
-    TREE_ERROR_INVALID_NEW_QUESTION     = 1 << 4,
+    TREE_ERROR_NULL_DATA                = 1 << 2,
+    TREE_ERROR_NOT_ENOUGH_NODES         = 1 << 3,
+    TREE_ERROR_TO_MUCH_NODES            = 1 << 4,
+    TREE_ERROR_INVALID_NEW_QUESTION     = 1 << 5,
+    TREE_ERROR_SAVE_FILE_SYNTAX        = 1 << 6,
     // TREE_ERROR_CYCLE
 
     TREE_ERROR_COMMON                   = 1 << 31
@@ -104,7 +111,8 @@ node_t *NodeCtor        (char *data);
 void TreeDelete         (node_t *node);
 void TreeDtor           (tree_t *tree);
 int TreeVerify          (tree_t *tree);
-int TreeSaveToFile      (tree_t *tree);
+int TreeLoadFromFile    (tree_t *tree, const char *fileName);
+int TreeSaveToFile      (tree_t *tree, const char *fileName);
 int NodeSaveToFile      (node_t *node, FILE *file);
 
 

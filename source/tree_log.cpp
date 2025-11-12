@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <assert.h>
 #include <time.h>
 
@@ -27,9 +28,9 @@ const char * const kFreeColor   = kDarkGreen;
 const char * const kEdgeNormal  = kBlack;
 
 void LeftRootRight      (node_t *node, FILE *graphFile);
-int TreeDumpImg         (tree_t *tree);
-int DumpMakeConfig      (tree_t *tree);
-int DumpMakeImg         (tree_t *tree);
+int TreeDumpImg         (node_t *node, treeLog_t *log);
+int DumpMakeConfig      (node_t *node, treeLog_t *log);
+int DumpMakeImg         (node_t *node, treeLog_t *log);
 
 int LogInit (treeLog_t *log)
 {
@@ -81,6 +82,36 @@ int LogInit (treeLog_t *log)
     return TREE_OK;
 }
 
+int NodeDump (node_t *node, treeLog_t *log,
+              const char *FILE_, int LINE_, const char *FUNC_,
+              const char *format, ...)
+{
+    assert(node);
+    assert(log);
+    assert(FILE_);
+    assert(FUNC_);
+    assert(format);
+
+    fprintf (log->logFile,
+             "<h3>NODE DUMP called at %s:%d:%s(): <font style=\"color: green;\">",
+             FILE_, LINE_, FUNC_);
+
+    va_list args;
+    va_start (args, format);
+    vfprintf (log->logFile, format, args);
+    va_end   (args);
+    
+    fprintf (log->logFile,
+             "%s",
+             "</font></h3>\n");
+    
+    TREE_DO_AND_CHECK (TreeDumpImg (node, log));
+
+    fprintf (log->logFile, "%s", "<hr>\n\n");
+
+    return TREE_OK;
+}
+
 int TreeDump (tree_t *tree, const char *comment,
               const char *FILE_, int LINE_, const char *FUNC_)
 {
@@ -93,27 +124,30 @@ int TreeDump (tree_t *tree, const char *comment,
     DEBUG_LOG ("comment = \"%s\";", comment);
 
     fprintf (tree->log.logFile,
-             "<h3>DUMP called at %s:%d:%s(): <font style=\"color: green;\">%s</font></h3>\n",
+             "<h3>TREE DUMP called at %s:%d:%s(): <font style=\"color: green;\">%s</font></h3>\n",
              FILE_, LINE_, FUNC_, comment);
     fprintf (tree->log.logFile,
              "%s[%p] initialized in {%s:%d}\n",
              tree->varInfo.name, tree, tree->varInfo.file, tree->varInfo.line);
+    fprintf (tree->log.logFile,
+             "tree->size = %lu;\n",
+             tree->size);
 
-
-    TREE_DO_AND_CHECK (TreeDumpImg (tree));
+    TREE_DO_AND_CHECK (TreeDumpImg (tree->root, &tree->log));
 
     fprintf (tree->log.logFile, "%s", "<hr>\n\n");
     
     return TREE_OK;
 }
 
-int TreeDumpImg (tree_t *tree)
+int TreeDumpImg (node_t *node, treeLog_t *log)
 {
-    assert (tree);
+    assert (node);
+    assert (log);
 
-    TREE_DO_AND_CHECK (DumpMakeConfig (tree));
+    TREE_DO_AND_CHECK (DumpMakeConfig (node, log));
 
-    TREE_DO_AND_CHECK (DumpMakeImg (tree));
+    TREE_DO_AND_CHECK (DumpMakeImg (node, log));
 
     return TREE_OK;
 }
@@ -159,12 +193,15 @@ void LeftRootRight (node_t *node, FILE *graphFile)
     }
 }
 
-int DumpMakeConfig (tree_t *tree)
+int DumpMakeConfig (node_t *node, treeLog_t *log)
 {
+    assert (node);
+    assert (log);
+
     imageCounter++;
 
     char graphFilePath[kFileNameLen + 22] = {};
-    snprintf (graphFilePath, kFileNameLen + 22, "%s%lu.dot", tree->log.dotFolderPath, imageCounter);
+    snprintf (graphFilePath, kFileNameLen + 22, "%s%lu.dot", log->dotFolderPath, imageCounter);
 
     DEBUG_VAR ("%s", graphFilePath);
 
@@ -182,15 +219,18 @@ int DumpMakeConfig (tree_t *tree)
                             // "\tnodesep=0.5;\n"
                             "\tnode [shape=octagon; style=\"filled\"; fillcolor=\"#ff8080\"];\n");
 
-    LeftRootRight (tree->root, graphFile);
+    LeftRootRight (node, graphFile);
 
     fprintf (graphFile, "%s", "}");
     fclose (graphFile);
 
     return TREE_OK;
 }
-int DumpMakeImg (tree_t *tree)
+int DumpMakeImg (node_t *node, treeLog_t *log)
 {
+    assert (node);
+    assert (log);
+
     char imgFileName[kFileNameLen] = {};
     snprintf (imgFileName, kFileNameLen, "%lu.svg", imageCounter);
 
@@ -198,8 +238,8 @@ int DumpMakeImg (tree_t *tree)
     char command[kMaxCommandLen] = {};
 
     snprintf (command, kMaxCommandLen, "dot %s%lu.dot -T svg -o %s%s", 
-              tree->log.dotFolderPath, imageCounter,
-              tree->log.imgFolderPath, imgFileName);
+              log->dotFolderPath, imageCounter,
+              log->imgFolderPath, imgFileName);
 
     int status = system (command);
     DEBUG_VAR ("%d", status);
@@ -211,8 +251,8 @@ int DumpMakeImg (tree_t *tree)
                COMMON_ERROR_RUNNING_SYSTEM_COMMAND;
     }
 
-    fprintf (tree->log.logFile,
-             "<img src=\"img/%s\" hieght=\"500\">\n",
+    fprintf (log->logFile,
+             "<img src=\"img/%s\" hieght=\"500px\">\n",
              imgFileName);
 
     DEBUG_VAR ("%s", command);
