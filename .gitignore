@@ -1,5 +1,6 @@
 program
 tmp*
 *.out
+dump/*
 .vscode/*
 tree.txt
