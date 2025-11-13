@@ -15,8 +15,8 @@ Akinator
 [\*]    Сохранить дерево                                \
 [\*]    Загрузить дерево                                \
 [\*] Структура Акинатор                                 \
-[\*] Деструктор Акинатора                               \
-# OPTIONAL:                                             \
+[\*] Деструктор Акинатора
+# OPTIONAL:
 [\*] Colors for program output text                     \
 [ ] HTML labels                                         \
-[ ] hash's                                              \
+[ ] hash's
