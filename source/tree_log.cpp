@@ -9,8 +9,6 @@
 
 #include "tree_log.h"
 
-#ifdef PRINT_DEBUG
-
 static size_t imageCounter = 0;
 
 const char * const kBlack       = "#000000";
@@ -58,15 +56,15 @@ int LogInit (treeLog_t *log)
 
     if (SafeMkdir (log->logFolderPath) != TREE_OK)
         return TREE_ERROR_COMMON | 
-            COMMON_ERROR_CREATING_FILE;
+               COMMON_ERROR_CREATING_FILE;
 
     if (SafeMkdir (log->imgFolderPath) != TREE_OK)
         return TREE_ERROR_COMMON | 
-            COMMON_ERROR_CREATING_FILE;
+               COMMON_ERROR_CREATING_FILE;
 
     if (SafeMkdir (log->dotFolderPath) != TREE_OK)
         return TREE_ERROR_COMMON | 
-            COMMON_ERROR_CREATING_FILE;
+               COMMON_ERROR_CREATING_FILE;
 
     log->logFile = fopen (log->logFilePath, "w");
     if (log->logFile == NULL)
@@ -126,9 +124,11 @@ int TreeDump (tree_t *tree, const char *comment,
     fprintf (tree->log.logFile,
              "<h3>TREE DUMP called at %s:%d:%s(): <font style=\"color: green;\">%s</font></h3>\n",
              file, line, func, comment);
-    fprintf (tree->log.logFile,
-             "%s[%p] initialized in {%s:%d}\n",
-             tree->varInfo.name, tree, tree->varInfo.file, tree->varInfo.line);
+    ON_DEBUG (
+        fprintf (tree->log.logFile,
+                 "%s[%p] initialized in {%s:%d}\n",
+                 tree->varInfo.name, tree, tree->varInfo.file, tree->varInfo.line);
+    );
     fprintf (tree->log.logFile,
              "tree->size = %lu;\n",
              tree->size);
@@ -176,18 +176,18 @@ void LeftRootRight (node_t *node, FILE *graphFile) // TODO rename
 
     if (node->left != NULL)
     {
-        DEBUG_LOG ("\t %p->%p [label = \"Да\"];\n", node, node->left);
+        DEBUG_LOG ("\t %p->%p [label = \"Yes\"];\n", node, node->left);
 
-        fprintf (graphFile, "\tnode%p->node%p [label = \"Да\"]\n", node, node->left);
+        fprintf (graphFile, "\tnode%p->node%p [label = \"Yes\"]\n", node, node->left);
         
         LeftRootRight (node->left, graphFile);
     }    
 
     if (node->right != NULL)
     {
-        DEBUG_LOG ("\t %p->%p [label = \"Нет\"];\n", node, node->left);
+        DEBUG_LOG ("\t %p->%p [label = \"No\"];\n", node, node->left);
 
-        fprintf (graphFile, "\tnode%p->node%p [label = \"Нет\"];\n", node, node->right);
+        fprintf (graphFile, "\tnode%p->node%p [label = \"No\"];\n", node, node->right);
         
         LeftRootRight (node->right, graphFile);
     }
@@ -259,5 +259,3 @@ int DumpMakeImg (node_t *node, treeLog_t *log)
 
     return TREE_OK;
 }
-
-#endif

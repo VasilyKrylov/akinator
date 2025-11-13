@@ -29,7 +29,9 @@ node_t *NodeCtor (tree_t *tree)
         return NULL;
     }
 
+    DEBUG_LOG ("tree->size = %lu", tree->size);
     tree->size += 1;
+    DEBUG_LOG ("tree->size = %lu", tree->size);
 
     node->data = NULL;
     node->left = NULL;
@@ -38,7 +40,7 @@ node_t *NodeCtor (tree_t *tree)
 
     return node;
 }
-void NodeFill (node_t *node, char *data)
+void NodeFill (node_t *node, treeDataType data)
 {
     assert (node);
     assert (data);
@@ -54,24 +56,25 @@ int TreeCtor (tree_t *tree
     assert (tree);
 
     tree->root = NULL;
+    tree->size = 0;
 
-    ON_DEBUG(
+    ON_DEBUG (
         tree->varInfo = varInfo;
-
-        int status = LogInit (&tree->log);
-        if (status != TREE_OK)
-            return status;
     );
 
-    return TREE_VERIFY (tree);
+    int status = LogInit (&tree->log);
+    DEBUG_VAR ("%d", status);
+    if (status != TREE_OK)
+        return status;
+
+
+    return TREE_OK;
 }
 void TreeDtor (tree_t *tree)
 {
-#ifdef PRINT_DEBUG
     fprintf (tree->log.logFile, "%s", "</pre>\n");
 
     fclose (tree->log.logFile);
-#endif // PRINT_DEBUG
 
     TreeDelete (tree->root);
 }
@@ -138,6 +141,9 @@ int TreeVerify (tree_t *tree)
 
     if (nodesCount < tree->size) error |= TREE_ERROR_NOT_ENOUGH_NODES;
     if (nodesCount > tree->size) error |= TREE_ERROR_TO_MUCH_NODES;
+
+    DEBUG_LOG ("nodesCount = %lu", nodesCount);
+    DEBUG_LOG ("tree->size = %lu", tree->size);
 
     return error;
 }
@@ -206,33 +212,41 @@ int NodeSaveToFile (node_t *node, FILE *file)
 }
 
 
-int TreeLoadFromFile (tree_t *tree, const char *fileName, char **buffer)
+int TreeLoadFromFile (tree_t *tree, const char *fileName, char **buffer, size_t *bufferLen)
 {
     assert (tree);
     assert (fileName);
 
-    DEBUG_LOG ("\n========== LOADING TREE FROM \"%s\" ==========\n", fileName);
+    DEBUG_PRINT ("\n========== LOADING TREE FROM \"%s\" ==========\n", fileName);
 
     if (tree->root != NULL)
+    {
+        ERROR_LOG ("%s", "TREE_ERROR_LOAD_INTO_NOT_EMPTY");
+        
         return TREE_ERROR_LOAD_INTO_NOT_EMPTY;
+    }
     // NOTE: какое нам дерево сюда приходит? Сконструированное или нет
     // TreeDtor (tree);
     // TREE_CTOR (tree, NULL);
     
-    size_t bufferLen = 0;
-    *buffer = ReadFile (fileName, &bufferLen);
+    *buffer = ReadFile (fileName, bufferLen);
     if (buffer == NULL)
     {
         return TREE_ERROR_COMMON |
-        COMMON_ERROR_READING_FILE;
+               COMMON_ERROR_READING_FILE;
     }
     char *curPos = *buffer;
     DEBUG_LOG ("buffer = \'%s\';", *buffer);
+    DEBUG_LOG ("*buffer = \'%p\';", *buffer);
     
     tree->root = TreeLoadNode (tree, *buffer, &curPos);
 
     if (tree->root == NULL)
+    {
+        ERROR_LOG ("%s", "Error in TreeLoadNode()");
+
         return TREE_ERROR_SAVE_FILE_SYNTAX;
+    }
 
     return TREE_OK;
 }
@@ -267,11 +281,15 @@ node_t *TreeLoadNode (tree_t *tree, // node_t * node
 
         node->left = TreeLoadNode (tree, buffer, curPos);
         if (node->left != NULL)
+        {
             NODE_DUMP (node->left, &tree->log, "After creating left subtree. \ncurPos = \'%s\'", *curPos);
+        }
         
         node->right = TreeLoadNode (tree, buffer, curPos);
         if (node->right != NULL)
+        {
             NODE_DUMP (node->right, &tree->log, "After creating right subtree. \ncurPos = \'%s\'", *curPos);
+        }
 
             
         if (**curPos != ')')
@@ -299,3 +317,16 @@ node_t *TreeLoadNode (tree_t *tree, // node_t * node
     }
 }
 
+bool IsLeaf (node_t *node)
+{
+    assert (node);
+
+    return node->left == NULL && node->right == NULL;
+}
+
+bool HasBothChildren (node_t *node)
+{
+    assert (node);
+
+    return node->left != NULL && node->right != NULL;
+}

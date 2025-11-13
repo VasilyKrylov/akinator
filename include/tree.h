@@ -7,6 +7,8 @@
 #include "debug.h"
 
 typedef char * treeDataType; // FIXME: use this
+const char * const treeDataTypeStr = "char *";
+#define TREE_FORMAT_STRING "%s"
 
 const size_t kMaxCommentLen         = 64;
 const size_t kTreeMaxLen            = (1UL << 32);
@@ -39,7 +41,6 @@ const char treeSaveFileName[]       = "tree.txt";
 
 #ifdef PRINT_DEBUG
 
-// NOTE Change name to VarInfoTree_t (?)
 struct varInfo_t
 {
     const char *name = NULL;
@@ -47,6 +48,7 @@ struct varInfo_t
     int line         = 0;
     const char *func = NULL;
 };
+// NOTE Change name to VarInfoTree_t (?)
 #define TREE_CTOR(treeName) TreeCtor (treeName,                                 \
                                         varInfo_t{.name = #treeName,            \
                                                   .file = __FILE__,             \
@@ -69,7 +71,7 @@ struct varInfo_t
 
 struct node_t
 {
-    char *data;
+    treeDataType data;
 
     node_t *left = NULL;
     node_t *right = NULL;
@@ -85,10 +87,10 @@ struct tree_t
 
     size_t size = 0;
 
+    treeLog_t log = {};
+
 #ifdef PRINT_DEBUG
     varInfo_t varInfo = {};
-
-    treeLog_t log = {};
 #endif
 };
 
@@ -111,13 +113,15 @@ enum treeError_t
 int TreeCtor            (tree_t *tree
                          ON_DEBUG (, varInfo_t varInfo));
 node_t *NodeCtor        (tree_t *tree);
-void NodeFill           (node_t *node, char *data);
+void NodeFill           (node_t *node, treeDataType data);
 void TreeDelete         (node_t *node);
 void TreeDtor           (tree_t *tree);
 int TreeVerify          (tree_t *tree);
-int TreeLoadFromFile    (tree_t *tree, const char *fileName, char **bufer);
+int TreeLoadFromFile    (tree_t *tree, const char *fileName, char **bufer, size_t *bufferLen);
 int TreeSaveToFile      (tree_t *tree, const char *fileName);
 int NodeSaveToFile      (node_t *node, FILE *file);
+bool IsLeaf             (node_t *node);
+bool HasBothChildren    (node_t *node);
 
 
 #endif //K_TREE_H

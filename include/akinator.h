@@ -3,7 +3,7 @@
 
 #include "tree.h"
 
-#define MAGENTA_COLOR     "\33[35m"
+#define MAGENTA_COLOR   "\33[35m"
 #define COLOR_END       "\33[0m"
 
 #define PRINT(format, ...) printf (MAGENTA_COLOR format COLOR_END, __VA_ARGS__)
@@ -17,7 +17,19 @@ enum akinatorError_t
     AKINATOR_ERROR_COMMON                   = 1 << 31,
 };
 
-int GuessCharacter (tree_t *tree);
-int AkinatorMenu (tree_t *tree);
+struct akinator_t
+{
+    tree_t tree = {};
+
+    char *buffer = NULL;
+    size_t bufferLen = 0;
+};
+
+int GuessCharacter      (tree_t *tree);
+int AkinatorMenu        (akinator_t *akinator);
+int AkinatorCtor        (akinator_t *akinator);
+int AkinatorDtor        (akinator_t *akinator);
+void AkinatorTreeDtor   (akinator_t *akinator);
+void AkinatorTreeDelete (akinator_t *akinator, node_t **node);
 
 #endif // K_AKINATOR_H
