@@ -36,7 +36,7 @@ node_t *NodeCtor (tree_t *tree)
     node->data = NULL;
     node->left = NULL;
     node->right = NULL;
-    node->dynamicAllocated = 0;
+    // node->dynamicAllocated = 0;
 
     return node;
 }
@@ -122,8 +122,8 @@ void TreeDelete (node_t *node)
         TreeDelete (node->right);
     }
 
-    if (node->dynamicAllocated)
-        free (node->data);
+    // if (node->dynamicAllocated)
+    free (node->data);
     
     free (node);
     node = NULL;
@@ -265,7 +265,7 @@ node_t *TreeLoadNode (tree_t *tree, // node_t * node
         char *data = *curPos + 1; // + 1 to get after "
         node_t *node = NodeCtor (tree); 
         NodeFill (node, data);
-        node->dynamicAllocated = 0;
+        // node->dynamicAllocated = 0;
 
         sscanf (*curPos, "\"%*[^\"]\"%n", &readBytes); // NOTE: make version without this sscanf
         (*curPos)[readBytes - 1] = 0;

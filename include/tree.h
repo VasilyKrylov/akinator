@@ -76,7 +76,7 @@ struct node_t
     node_t *left = NULL;
     node_t *right = NULL;
 
-    bool dynamicAllocated = 0;
+    // bool dynamicAllocated = 0;
 
     // bool deleted = false; 
     // for TreeDelete()
@@ -105,7 +105,11 @@ enum treeError_t
     TREE_ERROR_INVALID_NEW_QUESTION     = 1 << 5,
     TREE_ERROR_SAVE_FILE_SYNTAX         = 1 << 6,
     TREE_ERROR_LOAD_INTO_NOT_EMPTY      = 1 << 7,
-    TREE_ERROR_WRONG_NODE               = 1 << 8,
+    TREE_ERROR_INVALID_NODE             = 1 << 8,
+
+
+    TREE_NODE_FOUND                     = 1 << 9,
+    TREE_NODE_NOT_FOUND                 = 1 << 10,
 
     TREE_ERROR_COMMON                   = 1 << 31
 };
