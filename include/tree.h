@@ -102,14 +102,15 @@ enum treeError_t
     TREE_ERROR_NULL_DATA                = 1 << 2,
     TREE_ERROR_NOT_ENOUGH_NODES         = 1 << 3,
     TREE_ERROR_TO_MUCH_NODES            = 1 << 4,
-    TREE_ERROR_INVALID_NEW_QUESTION     = 1 << 5,
+    TREE_ERROR_INVALID_NEW_QUESTION     = 1 << 5, // FIXME: move to akinator (?)
     TREE_ERROR_SAVE_FILE_SYNTAX         = 1 << 6,
     TREE_ERROR_LOAD_INTO_NOT_EMPTY      = 1 << 7,
     TREE_ERROR_INVALID_NODE             = 1 << 8,
+    TREE_ERROR_INVALID_PATH             = 1 << 9, // bad value on stackNodePath
 
 
-    TREE_NODE_FOUND                     = 1 << 9,
-    TREE_NODE_NOT_FOUND                 = 1 << 10,
+    TREE_NODE_FOUND                     = 1 << 10,
+    TREE_NODE_NOT_FOUND                 = 1 << 11,
 
     TREE_ERROR_COMMON                   = 1 << 31
 };

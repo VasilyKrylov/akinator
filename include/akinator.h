@@ -25,7 +25,6 @@ struct akinator_t
     size_t bufferLen = 0;
 };
 
-int GuessCharacter      (tree_t *tree);
 int AkinatorMenu        (akinator_t *akinator);
 int AkinatorCtor        (akinator_t *akinator);
 int AkinatorDtor        (akinator_t *akinator);

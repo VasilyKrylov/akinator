@@ -17,15 +17,33 @@ enum userAnswer_t {
     USER_UKNOWN = -1
 };
 
+enum nodeForkDirection
+{
+    FORK_DIR_LEFT  = 1,
+    FORK_DIR_RIGHT = 0
+};
+
 int AskYesOrNo ();
 
-int AskQuestion     (tree_t *tree, node_t *node);
-int AskFinal        (tree_t *tree, node_t *node);
-int AddNewCharacter (tree_t *tree, node_t *node, char *userCharacter, char *newQuestion);
-int DescribeObject  (tree_t *tree);
-int FindCharacter   (node_t *node, 
-                     stack_t *rightPath,
-                     const char *character);
+// int AskQuestion         (tree_t *tree, node_t *node);
+int GuessCharacter      (tree_t *tree);
+int AskFinal            (tree_t *tree, node_t *node);
+int AddNewCharacter     (tree_t *tree, node_t *node, char *userCharacter, char *newQuestion);
+
+int DescribeCharacter      (tree_t *tree);
+int CharacterFindPath   (tree_t *tree, stack_t *nodePath, char *character);
+int FindCharacter       (node_t *node, 
+                         stack_t *nodePath,
+                         const char *character);
+int PrintDecription     (tree_t *tree,  stack_t *nodePath,
+                        char *character);
+
+
+void MenuDumpTree       (akinator_t *akinator);
+void MenuSaveTree       (akinator_t *akinator);
+void MenuLoadTree       (akinator_t *akinator);
+void MenuGuessCharacter (akinator_t *akinator);
+void MenuDescribeObject (akinator_t *akinator);
 
 int AkinatorCtor (akinator_t *akinator)
 {
@@ -104,7 +122,8 @@ int AkinatorMenu (akinator_t *akinator)
     while (true)
     {
         // NOTE: maybe do enums ?
-        PRINT  ("Choose the option:\n"
+        PRINT  ("\n"
+                "Choose the option:\n"
                 "\t[0] - Exit\n"
                 "\t[1] - Save the tree to \"%s\"\n"
                 "\t[2] - Load the tree from \"%s\"\n"
@@ -129,62 +148,14 @@ int AkinatorMenu (akinator_t *akinator)
         
         switch (action) 
         {
-            case 0:
-                return TREE_OK;
+            case 0: PRINT ("%s", "Goodbye!\n");         return TREE_OK;
 
-            case 1:
-            {
-                int status = TreeSaveToFile (&akinator->tree, treeSaveFileName);
-                if (status != TREE_OK)
-                    ERROR_PRINT ("%s", "Error saving the tree\n");
-                else 
-                    PRINT ("%s", "The tree saved successfully\n");
-                
-                break;
-            }
-
-            case 2:
-            {
-                akinator->tree.size = 0;
-                AkinatorTreeDelete (akinator, &akinator->tree.root);
-
-                if (akinator->buffer != NULL)
-                    free (akinator->buffer);
-
-                int status = TreeLoadFromFile (&akinator->tree, treeSaveFileName, &akinator->buffer, &akinator->bufferLen);
-                if (status != TREE_OK)
-                    ERROR_PRINT ("Error loading the tree.\nStatus code = %d", status);
-                else 
-                    PRINT ("%s", "The tree loaded successfully");
-
-                break;
-            }
-
-            case 3:
-                GuessCharacter (&akinator->tree);
-                TREE_DUMP (&akinator->tree, "After guess");
-                break;
-
-            case 4:
-            {
-                int status = TreeDump (&akinator->tree, "User asked to dump the tree", 
-                                       __FILE__, __LINE__, __func__);
-                if (status != TREE_OK)
-                    ERROR_PRINT ("Error loading the tree.\nStatus code = %d", status);
-                else 
-                    PRINT ("%s", "The tree loaded successfully");
-
-                break;
-            }
-
-            case 5:
-            {
-                DescribeObject (&akinator->tree);
-
-                break;
-            }
+            case 1: MenuSaveTree (akinator);            break;
+            case 2: MenuLoadTree (akinator);            break;
+            case 3: MenuGuessCharacter (akinator);      break;
+            case 4: MenuDumpTree (akinator);            break;
+            case 5: MenuDescribeObject (akinator);      break;
             
-
             default:
                 ERROR_PRINT ("%s", "Uknown command code, try again");
                 break;
@@ -192,6 +163,75 @@ int AkinatorMenu (akinator_t *akinator)
     }
 
     return AKINATOR_OK;
+}
+
+void MenuSaveTree (akinator_t *akinator)
+{
+    int status = TreeSaveToFile (&akinator->tree, treeSaveFileName);
+
+    if (status != TREE_OK)
+        ERROR_PRINT ("Error saving the tree\n"
+                     "Status code = %d", status);
+    else 
+        PRINT ("%s", "The tree saved successfully\n");
+}
+
+void MenuLoadTree (akinator_t *akinator)
+{
+    akinator->tree.size = 0;
+    AkinatorTreeDelete (akinator, &akinator->tree.root);
+
+    if (akinator->buffer != NULL)
+        free (akinator->buffer);
+
+    int status = TreeLoadFromFile (&akinator->tree, treeSaveFileName, &akinator->buffer, &akinator->bufferLen);
+    
+    if (status != TREE_OK)
+        ERROR_PRINT ("Error loading the tree\n"
+                     "Status code = %d", status);
+    else 
+        PRINT ("%s", "The tree loaded successfully\n");
+}
+
+void MenuDumpTree (akinator_t *akinator)
+{
+    int status = TreeDump (&akinator->tree, "User asked to dump the tree", 
+                            __FILE__, __LINE__, __func__);
+
+    if (status != TREE_OK)
+        ERROR_PRINT ("Error loading the tree.\nStatus code = %d", status);
+    else 
+        PRINT ("%s", "The tree dumped successfully\n");
+}
+
+void MenuGuessCharacter (akinator_t *akinator)
+{
+    int status = GuessCharacter (&akinator->tree);
+
+    if (status != TREE_OK)
+    {
+        ERROR_PRINT ("Error while guessing the character\n"
+                     "Status code = %d", status);
+    }
+    else
+    {
+        DEBUG_LOG ("%s", "GuessCharacter() returned TREE_OK");
+    }
+}
+
+void MenuDescribeObject (akinator_t *akinator)
+{
+    int status = DescribeCharacter (&akinator->tree);
+
+    if (status != TREE_OK)
+    {
+        DEBUG_PRINT ("Error while describing the character"
+                     "Status code = %d", status);
+    }
+    else
+    {
+        DEBUG_PRINT ("%s", "DescribeCharacter() returned TREE_OK");
+    }
 }
 
 int AskYesOrNo()
@@ -217,13 +257,12 @@ int AskYesOrNo()
     return USER_UKNOWN;
 }
 
-
 // Recursive version of GuessCharacter. Removed from project
 
 int GuessCharacter (tree_t *tree)
 {
     assert (tree);
-
+    
     DEBUG_LOG ("tree->size = %lu", tree->size);
 
     node_t *node = tree->root;
@@ -258,11 +297,13 @@ int GuessCharacter (tree_t *tree)
     if (IsLeaf (node)) 
     {
         int leftAttemtts = 5;
+        int status = TREE_OK;
+
         while (leftAttemtts--)
         {
             DEBUG_LOG ("tree->size = %lu", tree->size);
 
-            int status = AskFinal (tree, node);
+            status = AskFinal (tree, node);
 
             if (status == TREE_OK)
                 return TREE_OK;
@@ -271,6 +312,8 @@ int GuessCharacter (tree_t *tree)
         }
 
         PRINT ("%s", "You've made to much attemts to decsribe character. Please, try again");
+
+        return status;
     }
     else 
     {
@@ -351,8 +394,6 @@ int AskFinal (tree_t *tree, node_t *node)
     {
         case USER_YES:        
             PRINT ("%s", "I won. \n");
-
-            return AKINATOR_OK;
             break;
 
         case USER_NO:
@@ -380,13 +421,11 @@ int AskFinal (tree_t *tree, node_t *node)
             DEBUG_LOG ("result of adding character = %d;", res);
             
             return res;
-            break;
         }
         case USER_UKNOWN:
             ERROR_PRINT ("%s", "Sorry, you are wrong. You need to input Y/y or N/n\n");
 
             return AKINATOR_ERROR_WRONG_INPUT;
-
     
         default:
             assert (0 && "this should never happen");
@@ -440,7 +479,7 @@ int AddNewCharacter (tree_t *tree, node_t *node, char *userCharacter, char *newQ
     return TREE_OK;
 }
 
-int DescribeObject (tree_t *tree)
+int DescribeCharacter (tree_t *tree)
 {
     assert (tree);
 
@@ -457,39 +496,64 @@ int DescribeObject (tree_t *tree)
     stack_t nodePath = {};
     STACK_CREATE (&nodePath, tree->size);
 
-    status = FindCharacter (tree->root, &nodePath, character);
+    status = CharacterFindPath (tree, &nodePath, character);
+    if (status != TREE_OK)
+    {
+        StackDtor (&nodePath);
+        free (character);
+
+        return status;
+    }
+
+    status = PrintDecription (tree, &nodePath, character);
+    if (status != TREE_OK)
+    {
+        StackDtor (&nodePath);
+        free (character);
+
+        return status;
+    }
+
+    StackDtor (&nodePath);
+    free (character);
+
+    return TREE_OK;
+}
+
+int CharacterFindPath (tree_t *tree, stack_t *nodePath, char *character)
+{
+    assert (tree);
+    assert (character);
+
+    int status = FindCharacter (tree->root, nodePath, character);
+    STACK_DUMP (*nodePath, "Just to see the stack, normal debug output");
+
     switch (status)
     {
         case TREE_NODE_NOT_FOUND:
             ERROR_PRINT ("%s", "I don't know this character\n"
                                "You can add it using \"Guess character\"");
-            break;
+            return TREE_NODE_NOT_FOUND;
 
         case TREE_ERROR_INVALID_NODE:
             ERROR_PRINT ("%s", "Error in tree structure.\n"
                                "Please, make dump and contact with the developer.");
-            break;
+            return TREE_ERROR_INVALID_NODE;
 
         case TREE_NODE_FOUND:
-            PrintDecription (character, rightPath);
             break;
-
     
         default:
             assert (0 && "This should never happen");
             break;
     }
 
-    free (character);
-    StackDtor (&nodePath);
-
     return TREE_OK;
 }
 
 // NOTE: hash will be in future version, ded
-
 int FindCharacter (node_t *node, 
-                   stack_t *rightPath,
+                   stack_t *nodePath,
                    const char *character)
 {
     if (IsLeaf (node) && strcmp (node->data, character) == 0)
@@ -501,20 +565,20 @@ int FindCharacter (node_t *node,
 
     if (HasBothChildren (node))
     {
-        int found = FindCharacter (node->left, rightPath, character);
+        int found = FindCharacter (node->left, nodePath, character);
         if (found == TREE_NODE_FOUND)
         {
-            DEBUG_LOG ("Path to the node: \t%d", 1);
-            StackPush (rightPath, 1);
+            DEBUG_LOG ("Path to the node: \t%d", FORK_DIR_LEFT);
+            StackPush (nodePath, FORK_DIR_LEFT);
 
             return found;
         }
 
-        found = FindCharacter (node->right, rightPath, character);
+        found = FindCharacter (node->right, nodePath, character);
         if (found == TREE_NODE_FOUND)
         {
-            DEBUG_LOG ("Path to the node: \t%d", 0);
-            StackPush (rightPath, 0);
+            DEBUG_LOG ("Path to the node: \t%d", FORK_DIR_RIGHT);
+            StackPush (nodePath, FORK_DIR_RIGHT);
 
             return found;
         }
@@ -522,7 +586,7 @@ int FindCharacter (node_t *node,
     else if (!IsLeaf (node))
     {
         ERROR_LOG ("Node[%p] with data \"%s\" has only 1 child", node, node->data);
-        ERROR_LOG ("\t node->left = [%p]", node->left);
+        ERROR_LOG ("\t node->left  = [%p]", node->left);
         ERROR_LOG ("\t node->right = [%p]", node->right);
 
         return TREE_ERROR_INVALID_NODE;
@@ -531,7 +595,77 @@ int FindCharacter (node_t *node,
     return TREE_NODE_NOT_FOUND;
 }
 
-// int PrintDecription (char *character, stack_t nodePath)
-// {
+int PrintDecription (tree_t *tree,  stack_t *nodePath,
+                     char *character)
+{
+    node_t *node = tree->root;
 
-// }
+    PRINT ("%s is ", character);
+
+    while (HasBothChildren (node) && nodePath->size != 0)
+    {
+        stackDataType val = -1;
+        int status = StackPop (nodePath, &val);
+
+        if (status != OK)
+        {
+            StackPrintError (status);
+
+            return status;
+        }
+
+        if (val == FORK_DIR_LEFT)
+        {
+            PRINT ("%s", node->data);
+
+            node = node->left;
+        }
+        else if (val == FORK_DIR_RIGHT)
+        {
+            PRINT ("not %s", node->data);
+
+            node = node->right;
+        }
+        else
+        {
+            StackDump (nodePath, "This should never happen", 
+                       __FILE__, __LINE__, __func__);
+
+            ERROR_LOG ("Value poped from stack path is %d, but only %d and %d are allowed",
+                       val, FORK_DIR_LEFT, FORK_DIR_RIGHT);
+            
+            
+            return TREE_ERROR_INVALID_PATH;
+        }
+        TREE_DUMP (tree, "ASd");
+
+        if (HasBothChildren (node))
+        {
+            PRINT ("%s", ", ");
+        }
+    }
+    PRINT ("%s", "\n");
+
+    int status = TREE_OK;
+    if (!IsLeaf (node))
+    {
+        ERROR_LOG ("StackPath is empty, but node[%p] isn't leaf", node);
+        ERROR_LOG ("\t node->left  = [%p]", node->left);
+        ERROR_LOG ("\t node->right = [%p]", node->right);
+
+        status |= TREE_ERROR_INVALID_NODE;
+    }
+    if (nodePath->size != 0)
+    {
+        StackDump (nodePath, "Stack should be empty", 
+                    __FILE__, __LINE__, __func__);
+
+        ERROR_LOG ("StackPath is empty, but node[%p] isn't leaf", node);
+        ERROR_LOG ("\t node->left  = [%p]", node->left);
+        ERROR_LOG ("\t node->right = [%p]", node->right);
+
+        status |= TREE_ERROR_INVALID_NODE;
+    }
+
+    return status;
+}

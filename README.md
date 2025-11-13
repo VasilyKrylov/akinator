@@ -15,7 +15,10 @@ Akinator
 [\*]    Сохранить дерево                                \
 [\*]    Загрузить дерево                                \
 [\*] Структура Акинатор                                 \
-[\*] Деструктор Акинатора
+[\*] Деструктор Акинатора                               \
+[ ] Print tree error                                    \
+[\*] Open and close file                                \
+[ ] Try to use tree outside this project
 # OPTIONAL:
 [\*] Colors for program output text                     \
 [ ] HTML labels                                         \
