@@ -114,21 +114,23 @@ char *SkipSpaces (char *buffer)
     return buffer;
 }
 
-int SafeReadLine (char **str, size_t *strSize, FILE *stream)
+int SafeReadLine (char **str)
 {
-    ssize_t res = getline (str, strSize, stream);
-    (*str)[res - 1] = '\0';
-
-    DEBUG_LOG ("strSize of getline - %lu", *strSize);
-    DEBUG_LOG ("res of getline - %zd", res);
-
+    size_t bufSize = 0;
+    ssize_t res = getline (str, &bufSize, stdin);
+    
+    DEBUG_LOG ("bufSize of getline = %lu", bufSize);
+    DEBUG_LOG ("res of getline = %zd", res);
+    
     if (res < 0)
     {
         ERROR_PRINT ("Error reading user input - %s", strerror (errno));
         free (*str);
-
+        
         return COMMON_ERROR_READING_INPUT;
     }
+
+    (*str)[res - 1] = '\0';
 
     return COMMON_ERROR_OK;
 }

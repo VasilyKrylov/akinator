@@ -36,7 +36,6 @@ node_t *NodeCtor (tree_t *tree)
     node->data = NULL;
     node->left = NULL;
     node->right = NULL;
-    // node->dynamicAllocated = 0;
 
     return node;
 }
@@ -70,6 +69,7 @@ int TreeCtor (tree_t *tree
 
     return TREE_OK;
 }
+
 void TreeDtor (tree_t *tree)
 {
     fprintf (tree->log.logFile, "%s", "</pre>\n");
@@ -78,33 +78,6 @@ void TreeDtor (tree_t *tree)
 
     TreeDelete (tree->root);
 }
-
-// void TreeDelete (node_t *node)
-// {
-//     assert (node);
-
-//     DEBUG_LOG ("node [%p] -> data = \"%s\";", node, node->data);
-
-//     node_t *leftNode = node->left;
-//     node_t *rightNode = node->right;
-
-//     DEBUG_LOG ("\tleftNode [%p]", leftNode);
-//     DEBUG_LOG ("\trightNode [%p]", rightNode);
-
-//     free (node->data);
-//     free (node);
-    
-//     node = NULL;
-    
-//     if (leftNode != NULL)
-//     {
-//         TreeDelete (leftNode);
-//     }
-//     if (rightNode != NULL)
-//     {
-//         TreeDelete (rightNode);
-//     }
-// }
 
 // TODO: занулять информацию и использовать это вместо isValid
 void TreeDelete (node_t *node)
@@ -225,9 +198,6 @@ int TreeLoadFromFile (tree_t *tree, const char *fileName, char **buffer, size_t 
         
         return TREE_ERROR_LOAD_INTO_NOT_EMPTY;
     }
-    // NOTE: какое нам дерево сюда приходит? Сконструированное или нет
-    // TreeDtor (tree);
-    // TREE_CTOR (tree, NULL);
     
     *buffer = ReadFile (fileName, bufferLen);
     if (buffer == NULL)
@@ -236,7 +206,6 @@ int TreeLoadFromFile (tree_t *tree, const char *fileName, char **buffer, size_t 
                COMMON_ERROR_READING_FILE;
     }
     char *curPos = *buffer;
-    DEBUG_LOG ("buffer = \'%s\';", *buffer);
     DEBUG_LOG ("*buffer = \'%p\';", *buffer);
     
     tree->root = TreeLoadNode (tree, *buffer, &curPos);
@@ -247,6 +216,8 @@ int TreeLoadFromFile (tree_t *tree, const char *fileName, char **buffer, size_t 
 
         return TREE_ERROR_SAVE_FILE_SYNTAX;
     }
+
+    TREE_DUMP (tree, "%s", "After load");
 
     return TREE_OK;
 }
@@ -329,4 +300,11 @@ bool HasBothChildren (node_t *node)
     assert (node);
 
     return node->left != NULL && node->right != NULL;
+}
+
+bool HasOneChild (node_t *node)
+{
+    assert (node);
+
+    return !IsLeaf (node) && !HasBothChildren (node);
 }

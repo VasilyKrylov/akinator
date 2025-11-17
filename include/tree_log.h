@@ -24,10 +24,9 @@ struct treeLog_t
 };
 
 int LogInit             (treeLog_t *log);
-int TreeDump            (tree_t *tree, const char *comment,
-                         const char *_FILE, int _LINE, const char * _FUNC);
-int NodeDump            (node_t *node, treeLog_t *log,
-                         const char *FILE_, int LINE_, const char *FUNC_,
-                         const char *format, ...);
+int TreeDump            (tree_t *tree, const char *format,
+                         const char *file, int line, const char *func, ...);
+int NodeDump            (node_t *node, treeLog_t *log, const char *format,
+                         const char *file, int line, const char *func, ...);
 
 #endif // K_TREE_LOG_H

@@ -80,22 +80,21 @@ int LogInit (treeLog_t *log)
     return TREE_OK;
 }
 
-int NodeDump (node_t *node, treeLog_t *log,
-              const char *file, int line, const char *func,
-              const char *format, ...)
+int NodeDump (node_t *node, treeLog_t *log, const char *format,
+              const char *file, int line, const char *func, ...)
 {
-    assert(node);
-    assert(log);
-    assert(file);
-    assert(func);
-    assert(format);
+    assert (node);
+    assert (log);
+    assert (file);
+    assert (func);
+    assert (format);
 
     fprintf (log->logFile,
              "<h3>NODE DUMP called at %s:%d:%s(): <font style=\"color: green;\">",
              file, line, func);
 
-    va_list args = {};
-    va_start (args, format);
+    va_list  args = {};
+    va_start (args, func);
     vfprintf (log->logFile, format, args);
     va_end   (args);
     
@@ -107,23 +106,30 @@ int NodeDump (node_t *node, treeLog_t *log,
 
     fprintf (log->logFile, "%s", "<hr>\n\n");
 
+    fflush (log->logFile);
+
     return TREE_OK;
 }
 
-int TreeDump (tree_t *tree, const char *comment,
-              const char *file, int line, const char *func)
+int TreeDump (tree_t *tree, const char *format,
+              const char *file, int line, const char *func, ...)
 {
-    assert(tree);
-    assert(comment);
-    assert(file);
-    assert(func);
+    assert (tree);
+    assert (format);
+    assert (file);
+    assert (func);
     
-    DEBUG_PRINT ("%s", "\n");
-    DEBUG_LOG ("comment = \"%s\";", comment);
-
     fprintf (tree->log.logFile,
-             "<h3>TREE DUMP called at %s:%d:%s(): <font style=\"color: green;\">%s</font></h3>\n",
-             file, line, func, comment);
+        "<h3>TREE DUMP called at %s:%d:%s(): <font style=\"color: green;\">",
+        file, line, func);
+        
+    va_list args = {};
+    va_start (args, func);
+    vfprintf (tree->log.logFile, format, args);
+    va_end   (args);
+
+    fprintf (tree->log.logFile, "%s", "</font></h3>\n");
+        
     ON_DEBUG (
         fprintf (tree->log.logFile,
                  "%s[%p] initialized in {%s:%d}\n",
@@ -136,6 +142,8 @@ int TreeDump (tree_t *tree, const char *comment,
     TREE_DO_AND_CHECK (TreeDumpImg (tree->root, &tree->log));
 
     fprintf (tree->log.logFile, "%s", "<hr>\n\n");
+
+    fflush (tree->log.logFile);
     
     return TREE_OK;
 }

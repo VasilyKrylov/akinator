@@ -13,9 +13,11 @@ int main()
     akinator_t akinator = {};
 
     int status = AkinatorCtor (&akinator);
+
     DEBUG_VAR ("%d", status);
-    if (status != AKINATOR_OK)
-        return AKINATOR_OK;
+    
+    if (status != TREE_OK)
+        return status;
     
     AkinatorMenu (&akinator);
 

@@ -54,17 +54,19 @@ struct varInfo_t
                                                   .file = __FILE__,             \
                                                   .line = __LINE__,             \
                                                   .func = __func__})
-#define TREE_DUMP(treeName, comment) TreeDump (treeName, comment, __FILE__, __LINE__, __func__)
-#define NODE_DUMP(nodeName, treeLog, format, ...) NodeDump (nodeName, treeLog,              \
+#define TREE_DUMP(treeName, format, ...)          TreeDump (treeName, format,               \
                                                             __FILE__, __LINE__, __func__,   \
-                                                            format, __VA_ARGS__)
+                                                            __VA_ARGS__)
+#define NODE_DUMP(nodeName, treeLog, format, ...) NodeDump (nodeName, treeLog, format,      \
+                                                            __FILE__, __LINE__, __func__,   \
+                                                            __VA_ARGS__)
 
 #define TREE_VERIFY(tree) TreeVerify (tree) 
 #else
 
 #define TREE_CTOR(treeName) TreeCtor (treeName) 
 #define TREE_VERIFY(tree) TREE_OK;
-#define TREE_DUMP(tree, comment) 
+#define TREE_DUMP(tree, format, ...) 
 #define NODE_DUMP(nodeName, treeLog, format, ...) 
 
 #endif // PRING_DEBUG
@@ -127,6 +129,7 @@ int TreeSaveToFile      (tree_t *tree, const char *fileName);
 int NodeSaveToFile      (node_t *node, FILE *file);
 bool IsLeaf             (node_t *node);
 bool HasBothChildren    (node_t *node);
+bool HasOneChild        (node_t *node);
 
 
 #endif //K_TREE_H

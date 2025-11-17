@@ -31,9 +31,9 @@ enum commonErrors
     COMMON_ERROR_READING_INPUT          = 1 << 4,
     COMMON_ERROR_READING_FILE           = 1 << 5,
     COMMON_ERROR_WRITE_TO_FILE          = 1 << 6,
-    COMMON_ERROR_TO_EARLY_EOF           = 1 << 7,
-    COMMON_ERROR_CREATING_FILE          = 1 << 8,
-    COMMON_ERROR_RUNNING_SYSTEM_COMMAND = 1 << 9 // TODO: add text messages
+    COMMON_ERROR_CREATING_FILE          = 1 << 7,
+    COMMON_ERROR_WRONG_USER_INPUT       = 1 << 8,
+    COMMON_ERROR_RUNNING_SYSTEM_COMMAND = 1 << 10 // TODO: add text messages
 };
 
 

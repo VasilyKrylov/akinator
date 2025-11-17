@@ -17,7 +17,6 @@ void PrintCommonError (int error)
     CHECK_ERROR (COMMON_ERROR_NULL_POINTER,         "Some pointer is NULL, but it should not be NULL");
     CHECK_ERROR (COMMON_ERROR_READING_INPUT,        "Error reading data from stdin");
     CHECK_ERROR (COMMON_ERROR_WRITE_TO_FILE,        "Error while writing some data to file");
-    CHECK_ERROR (COMMON_ERROR_TO_EARLY_EOF,         "File ended to early");
 }
 
 #undef CHECK_ERROR

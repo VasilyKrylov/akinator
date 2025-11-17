@@ -147,7 +147,6 @@ int StackCtor (stack_t *stack, size_t capacity
     if (stack->data == NULL)
         return NULL_DATA;
 
-
 #ifdef STACK_CANARY
     *GetCanaryStart (stack) = CANARY;
     *GetCanaryEnd (stack)   = CANARY;
@@ -238,6 +237,20 @@ int StackPop (stack_t *stack, stackDataType *value)
 #ifdef PRINT_DEBUG
     stack->data[stack->size] = POISON;
 #endif // PRINT_DEBUG
+    return STACK_ERROR (stack);
+}
+
+int StackTop (stack_t *stack, stackDataType *value)
+{
+    int error = STACK_ERROR (stack);
+    if (error != OK) 
+        return error;
+
+    if (stack->size == 0)
+        return TRYING_TO_TOP_FROM_EMPTY_STACK;
+
+    *value = stack->data[stack->size - 1];
+    
     return STACK_ERROR (stack);
 }
 

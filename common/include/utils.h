@@ -7,6 +7,6 @@ int SafeMkdir       (const char *fileName);
 void ClearBuffer    ();
 char *SkipSpaces    (char *buffer);
 char *ReadFile      (const char *inputFileName, size_t *bufferLen);
-int SafeReadLine    (char **str, size_t *strLen, FILE *stream);
+int SafeReadLine    (char **str);
 
 #endif // K_UTILS_H

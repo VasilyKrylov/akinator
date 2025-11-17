@@ -67,17 +67,19 @@ enum stackErrors
     DATA_CANARY_END_OVERWRITE       = 1 << 7,
     POISON_VALUE_IN_DATA            = 1 << 8,
     WRONG_VALUE_IN_POISON           = 1 << 9,
-    TRYING_TO_POP_FROM_EMPTY_STACK  = 1 << 10
+    TRYING_TO_POP_FROM_EMPTY_STACK  = 1 << 10,
+    TRYING_TO_TOP_FROM_EMPTY_STACK  = 1 << 11
 };
 
-void StackPrintError (int error);
-int StackError (stack_t *stack);
-int StackCtor (stack_t *stack, size_t capacity
-                  ON_DEBUG(, varInfoStack_t varInfo));
-int StackPush (stack_t *stack, stackDataType value);
-int StackPop (stack_t *stack, stackDataType *value);
-int StackDtor (stack_t *stack);
-void StackDump (stack_t *stack, const char *comment,
-                const char *_FILE, int _LINE, const char * _FUNC);
+void StackPrintError    (int error);
+int StackError          (stack_t *stack);
+int StackCtor           (stack_t *stack, size_t capacity
+                          ON_DEBUG(, varInfoStack_t varInfo));
+int StackPush           (stack_t *stack, stackDataType value);
+int StackPop            (stack_t *stack, stackDataType *value);
+int StackTop            (stack_t *stack, stackDataType *value);
+int StackDtor           (stack_t *stack);
+void StackDump          (stack_t *stack, const char *comment,
+                         const char *_FILE, int _LINE, const char * _FUNC);
 
 #endif // K_STACK_H
