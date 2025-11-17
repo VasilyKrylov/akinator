@@ -2,6 +2,7 @@
 Akinator
 
 # TODO
+[  ] FIX PrintDecription !!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \ 
 [\*] Enum for akinator errors?                          \
 [\*] Write FindCharacter()                              \
 [\*] Write CompareCharacters()                          \
@@ -18,10 +19,10 @@ Akinator
 [\*] Структура Акинатор                                 \
 [\*] Деструктор Акинатора                               \
 [ ] Print tree error                                    \
-[ ] Open and close file                                 \
+[\*] flush output of logs                               \
 [ ] Try to use tree outside this project                \
 [ ] Use verificator in tree functions                   \
-[ ] Fix comma
+[ ] Fix comma 
 # OPTIONAL:
 [\*] Colors for program output text                     \
 [ ] HTML labels                                         \
