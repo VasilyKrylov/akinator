@@ -12,12 +12,15 @@
 
 #include "tree.h"
 
-static int TreeCountNodes      (node_t *node, size_t size, size_t *nodesCount);
-static int TreeLoadNode        (tree_t *tree, node_t **node,
-                                char *buffer, char **curPos);
+static int TreeCountNodes       (node_t *node, size_t size, size_t *nodesCount);
+static int TreeLoadNode         (tree_t *tree, node_t **node,
+                                 char *buffer, char **curPos);
 
-static int TreeLoadNodeAndFill (tree_t *tree, node_t **node,
-                                char *buffer, char **curPos);
+static int TreeLoadNodeAndFill  (tree_t *tree, node_t **node,
+                                 char *buffer, char **curPos);
+
+int TreeLoadSubNodes            (tree_t *tree, node_t **node,
+                                 char *buffer, char **curPos);
 
 // maybe: pass varInfo here for ERROR_LOG
 node_t *NodeCtor (tree_t *tree)
@@ -284,18 +287,11 @@ int TreeLoadNodeAndFill (tree_t *tree, node_t **node,
     NODE_DUMP (node, &tree->log, "Created new node - \"%s\". \n"
                                  "curPos = \'%s\'", *curPos + 1, *curPos);
 
-    int status = TreeLoadNode (tree, &(*node)->left, buffer, curPos);
-    if (status != TREE_OK)
-        return status;
-
-    NODE_DUMP ((*node)->left, &tree->log, "After creating left subtree. \ncurPos = \'%s\'", *curPos);
     
-    status = TreeLoadNode (tree, &(*node)->right, buffer, curPos);
+    int status = TreeLoadSubNodes (tree, node, buffer, curPos);
     if (status != TREE_OK)
         return status;
-
-    NODE_DUMP (node->right, &tree->log, "After creating right subtree. \ncurPos = \'%s\'", *curPos);
-        
+    
     if (**curPos != ')')
     {
         ERROR_LOG ("%s", "Syntax error in tree dump file - missing closing bracket ')'");
@@ -306,6 +302,25 @@ int TreeLoadNodeAndFill (tree_t *tree, node_t **node,
 
     (*curPos)++;
 
+    return TREE_OK;
+}
+int TreeLoadSubNodes (tree_t *tree, node_t **node,
+                      char *buffer, char **curPos)
+{
+    int status = TreeLoadNode (tree, &(*node)->left, buffer, curPos);
+    if (status != TREE_OK)
+        return status;
+
+    NODE_DUMP ((*node)->left, &tree->log, "After creating left subtree. \n"
+                                          "curPos = \'%s\'", *curPos);
+    
+    status = TreeLoadNode (tree, &(*node)->right, buffer, curPos);
+    if (status != TREE_OK)
+        return status;
+
+    NODE_DUMP (node->right, &tree->log, "After creating right subtree. \n"
+                                        "curPos = \'%s\'", *curPos);
+    
     return TREE_OK;
 }
 
