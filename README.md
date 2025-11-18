@@ -22,7 +22,7 @@ Akinator
 [\*] flush output of logs                               \
 [ ] Try to use tree outside this project                \
 [ ] Use verificator in tree functions                   \
-[ ] Fix comma 
+[\*] Fix comma 
 # OPTIONAL:
 [\*] Colors for program output text                     \
 [ ] HTML labels                                         \
