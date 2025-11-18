@@ -213,6 +213,7 @@ int TreeLoadFromFile (tree_t *tree, const char *fileName, char **buffer, size_t 
     }
     char *curPos = *buffer;
     DEBUG_LOG ("*buffer = \'%p\';", *buffer);
+    DEBUG_LOG ("*buffer = \'%s\';", *buffer);
     
     int status = TreeLoadNode (tree, &tree->root, *buffer, &curPos);
 
@@ -284,10 +285,9 @@ int TreeLoadNodeAndFill (tree_t *tree, node_t **node,
 
     *curPos += readBytes;
     
-    NODE_DUMP (node, &tree->log, "Created new node - \"%s\". \n"
-                                 "curPos = \'%s\'", *curPos + 1, *curPos);
+    NODE_DUMP (*node, &tree->log, "Created new node - \"%s\". \n"
+                                  "curPos = \'%s\'", *curPos + 1, *curPos);
 
-    
     int status = TreeLoadSubNodes (tree, node, buffer, curPos);
     if (status != TREE_OK)
         return status;
@@ -311,15 +311,21 @@ int TreeLoadSubNodes (tree_t *tree, node_t **node,
     if (status != TREE_OK)
         return status;
 
-    NODE_DUMP ((*node)->left, &tree->log, "After creating left subtree. \n"
-                                          "curPos = \'%s\'", *curPos);
+    if ((*node)->left != NULL)
+    {
+        NODE_DUMP ((*node)->left, &tree->log, "After creating left subtree. \n"
+                                            "curPos = \'%s\'", *curPos);
+    }
     
     status = TreeLoadNode (tree, &(*node)->right, buffer, curPos);
     if (status != TREE_OK)
         return status;
 
-    NODE_DUMP (node->right, &tree->log, "After creating right subtree. \n"
-                                        "curPos = \'%s\'", *curPos);
+    if ((*node)->right != NULL)
+    {
+        NODE_DUMP ((*node)->right, &tree->log, "After creating right subtree. \n"
+                                            "curPos = \'%s\'", *curPos);
+    }
     
     return TREE_OK;
 }
