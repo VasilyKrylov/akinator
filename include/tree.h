@@ -109,10 +109,11 @@ enum treeError_t
     TREE_ERROR_LOAD_INTO_NOT_EMPTY      = 1 << 7,
     TREE_ERROR_INVALID_NODE             = 1 << 8,
     TREE_ERROR_INVALID_PATH             = 1 << 9, // bad value on stackNodePath
+    TREE_ERROR_CREATING_NODE            = 1 << 10,
+    TREE_ERROR_SYNTAX_IN_SAVE_FILE      = 1 << 11,
 
-
-    TREE_NODE_FOUND                     = 1 << 10,
-    TREE_NODE_NOT_FOUND                 = 1 << 11,
+    TREE_NODE_FOUND                     = 1 << 12,
+    TREE_NODE_NOT_FOUND                 = 1 << 13,
 
     TREE_ERROR_COMMON                   = 1 << 31
 };

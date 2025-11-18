@@ -21,10 +21,6 @@ int main()
     
     AkinatorMenu (&akinator);
 
-    // r2->right = tree.root;
-    // ON_DEBUG (int res = TreeVerify (&tree));
-    // DEBUG_LOG ("verify res = %d;", res);
-
     DEBUG_VAR ("%p", akinator.buffer);
     AkinatorDtor (&akinator);
 }

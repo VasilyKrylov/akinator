@@ -44,14 +44,17 @@ static int AskDifferenceAndAdd     (tree_t *tree, node_t *node);
 static int AddNewCharacter         (tree_t *tree, node_t *node, char *userCharacter, char *newQuestion);
 
 static int DescribeCharacter       (tree_t *tree);
-static int CharacterFindPath       (tree_t *tree, stack_t *nodePath, char *character);
+static int FindCharacterAndPrintError       (tree_t *tree, stack_t *nodePath, char *character);
 static int FindCharacter           (node_t *node, 
                                     stack_t *nodePath,
                                     const char *character);
 static int PrintDecription         (node_t *node,  stack_t *nodePath,
                                     char *character);
 static int CompareCharacters       (tree_t *tree);
+void CompareCharactersClear        (stack_t *firstPath, stack_t *secondPath,
+                                    char **firstCharacter, char **secondCharacter);
 static int GetCharactersToCompare  (char **firstCharacter, char **secondCharacter);
+bool IsSameDirection               (stack_t *firstPath, stack_t *secondPath);
 static int PrintCommonDescription  (node_t **lca, stack_t *firstPath, stack_t *secondPath);
 static int MoveAndPrint            (node_t **node, int direction);
 
@@ -75,8 +78,7 @@ int AkinatorCtor (akinator_t *akinator)
 
     akinator->tree.root = NodeCtor (&akinator->tree);
     if (akinator->tree.root == NULL)
-        return TREE_ERROR_COMMON |
-               COMMON_ERROR_ALLOCATING_MEMORY;
+        return TREE_ERROR_CREATING_NODE;
 
     NodeFill (akinator->tree.root, strdup ("uknown character"));
 
@@ -176,8 +178,6 @@ int AkinatorMenu (akinator_t *akinator)
         int status = MenuGetAction (&action);
         if (status != TREE_OK)
             continue;
-
-        status = TREE_OK;
         
         switch (action) 
         {
@@ -197,8 +197,8 @@ int AkinatorMenu (akinator_t *akinator)
 
         if (status != TREE_OK)
         {
-            ERROR_PRINT ("Error occured\n"
-                         "Status code = %d", status);
+            DEBUG_LOG ("Error occured\n"
+                       "Status code = %d", status);
         }
         else
         {
@@ -219,8 +219,8 @@ int MenuLoadTree (akinator_t *akinator)
     akinator->tree.size = 0;
     AkinatorTreeDelete (akinator, &akinator->tree.root);
 
-    if (akinator->buffer != NULL)
-        free (akinator->buffer);
+    free (akinator->buffer);
+    akinator->buffer = NULL;
 
     int status = TreeLoadFromFile (&akinator->tree, treeSaveFileName, &akinator->buffer, &akinator->bufferLen);
 
@@ -230,7 +230,7 @@ int MenuLoadTree (akinator_t *akinator)
 int MenuDumpTree (akinator_t *akinator)
 {
     return TreeDump (&akinator->tree, "User asked to dump the tree", 
-                            __FILE__, __LINE__, __func__);
+                     __FILE__, __LINE__, __func__);
 }
 
 int MenuGuessCharacter (akinator_t *akinator)
@@ -282,7 +282,7 @@ int GuessCharacter (tree_t *tree)
     while (HasBothChildren (node))
     {
         PRINT ("Is it %s? (input Y/y or N/n)\n"
-                " > ", node->data);
+               " > ", node->data);
         
         int answer = AskYesOrNo();
 
@@ -402,7 +402,6 @@ int AskDifferenceAndAdd (tree_t *tree, node_t *node)
     return res;
 }
 
-
 int AddNewCharacter (tree_t *tree, node_t *node, char *userCharacter, char *newQuestion)
 {
     assert (tree);
@@ -419,15 +418,13 @@ int AddNewCharacter (tree_t *tree, node_t *node, char *userCharacter, char *newQ
 
     node_t *userNode = NodeCtor (tree);
     if (userNode == NULL)
-        return TREE_ERROR_COMMON |
-               COMMON_ERROR_ALLOCATING_MEMORY;
+        return TREE_ERROR_CREATING_NODE;
     
     NodeFill (userNode, userCharacter);
 
     node_t *oldNode  = NodeCtor (tree);
     if (userNode == NULL)
-        return TREE_ERROR_COMMON |
-               COMMON_ERROR_ALLOCATING_MEMORY;
+        return TREE_ERROR_CREATING_NODE;
     
     NodeFill (oldNode, node->data);
 
@@ -459,7 +456,7 @@ int DescribeCharacter (tree_t *tree)
     stack_t nodePath = {};
     STACK_CREATE (&nodePath, tree->size);
 
-    status = CharacterFindPath (tree, &nodePath, character);
+    status = FindCharacterAndPrintError (tree, &nodePath, character);
     if (status != TREE_NODE_FOUND)
     {
         StackDtor (&nodePath);
@@ -483,7 +480,7 @@ int DescribeCharacter (tree_t *tree)
     return TREE_OK;
 }
 
-int CharacterFindPath (tree_t *tree, stack_t *nodePath, char *character)
+int FindCharacterAndPrintError (tree_t *tree, stack_t *nodePath, char *character)
 {
     assert (tree);
     assert (character);
@@ -571,12 +568,12 @@ int PrintDecription (node_t *node,  stack_t *nodePath,
     assert (nodePath);
     assert (character);
 
-    PRINT ("%s is ", character);
+    PRINT ("%s - ", character);
 
     while (HasBothChildren (node) && nodePath->size != 0)
     {
-        int val = 0;
-        int status = StackPop (nodePath, &val);
+        int direction = 0;
+        int status = StackPop (nodePath, &direction);
 
         if (status != OK)
         {
@@ -585,33 +582,12 @@ int PrintDecription (node_t *node,  stack_t *nodePath,
             return status;
         }
 
-        if (val == NODE_DIR_LEFT)
-        {
-            PRINT ("%s", node->data);
+        status = MoveAndPrint (&node, direction);
+        if (status != TREE_OK)
+            return status;
 
-            node = node->left;
-        }
-        else if (val == NODE_DIR_RIGHT)
-        {
-            PRINT ("not %s", node->data);
-
-            node = node->right;
-        }
-        else
-        {
-            StackDump (nodePath, "This should never happen", 
-                       __FILE__, __LINE__, __func__);
-
-            ERROR_LOG ("Value poped from stack path is " STACK_FORMAT_STRING ", but only %d and %d are allowed",
-                       val, NODE_DIR_LEFT, NODE_DIR_RIGHT);
-            
-            return TREE_ERROR_INVALID_PATH;
-        }
-        
-        if (HasBothChildren (node))
-        {
+        if (HasBothChildren (node)) 
             PRINT (", ");
-        }
     }
     PRINT ("\n");
 
@@ -643,32 +619,35 @@ int CompareCharacters (tree_t *tree)
 {
     assert (tree);
 
-    char *firstCharacter = NULL;
-    char *secondCharacter = NULL;
-    int status = GetCharactersToCompare (&firstCharacter, &secondCharacter);
-
     stack_t firstPath = {};
     STACK_CREATE (&firstPath, tree->size);
+
     stack_t secondPath = {};
     STACK_CREATE (&secondPath, tree->size);
 
-    status = CharacterFindPath (tree, &firstPath, firstCharacter);
-    if (status != TREE_NODE_FOUND)
+    char *firstCharacter = NULL;
+    char *secondCharacter = NULL;
+
+    int status = GetCharactersToCompare (&firstCharacter, &secondCharacter);
+    if (status != TREE_OK)
     {
-        StackDtor (&firstPath);
-        free (firstCharacter);
+        CompareCharactersClear (&firstPath, &secondPath, &firstCharacter, &secondCharacter);
 
         return status;
     }
 
-    status = CharacterFindPath (tree, &secondPath, secondCharacter);
+    status = FindCharacterAndPrintError (tree, &firstPath, firstCharacter);
     if (status != TREE_NODE_FOUND)
     {
-        StackDtor (&firstPath);
-        free (firstCharacter);
+        CompareCharactersClear (&firstPath, &secondPath, &firstCharacter, &secondCharacter);
 
-        StackDtor (&secondPath);
-        free (secondCharacter);
+        return status;
+    }
+
+    status = FindCharacterAndPrintError (tree, &secondPath, secondCharacter);
+    if (status != TREE_NODE_FOUND)
+    {
+        CompareCharactersClear (&firstPath, &secondPath, &firstCharacter, &secondCharacter);
 
         return status;
     }
@@ -679,13 +658,31 @@ int CompareCharacters (tree_t *tree)
     PrintDecription (lca, &firstPath, firstCharacter);
     PrintDecription (lca, &secondPath, secondCharacter);
 
-    StackDtor (&firstPath);
-    free (firstCharacter);
-
-    StackDtor (&secondPath);
-    free (secondCharacter);
+    CompareCharactersClear (&firstPath, &secondPath, &firstCharacter, &secondCharacter);
 
     return TREE_OK;
+}
+
+void CompareCharactersClear (stack_t *firstPath, stack_t *secondPath,
+                             char **firstCharacter, char **secondCharacter)
+{
+    assert (firstPath);
+    assert (secondPath);
+
+    assert (firstCharacter);
+    assert (secondCharacter);
+
+    assert (*firstCharacter);
+    assert (*secondCharacter);
+
+    StackDtor (firstPath);
+    StackDtor (secondPath);
+
+    free (*firstCharacter);
+    free (*secondCharacter);
+
+    *firstCharacter  = NULL;
+    *secondCharacter = NULL;
 }
 
 int GetCharactersToCompare (char **firstCharacter, char **secondCharacter)
@@ -718,32 +715,55 @@ int PrintCommonDescription (node_t **lca, stack_t *firstPath, stack_t *secondPat
     assert (firstPath);
     assert (secondPath);
 
-    PRINT ("Both characters are: ");
+    if (IsSameDirection (firstPath, secondPath))
+    {
+        PRINT ("Both characters are: ");
+    }
+    else
+    {
+        PRINT ("Both characters don't have common parameters\n");
 
-    while (firstPath->size != 0 && secondPath != 0)
+        return TREE_OK;
+    }
+
+    while (firstPath->size != 0 && secondPath->size != 0)
     {
         stackDataType firstDir  = NODE_DIR_UKNOWN;
         stackDataType secondDir = NODE_DIR_UKNOWN;
 
-        StackTop (firstPath,  &firstDir);
-        StackTop (secondPath, &secondDir);
-
-        DEBUG_VAR ("%d", firstDir);
-        DEBUG_VAR ("%d", secondDir);
-        if (firstDir != secondDir) 
-            break;
-
         StackPop (firstPath,  &firstDir);
         StackPop (secondPath, &secondDir);
+
+        DEBUG_VAR (STACK_FORMAT_STRING, firstDir);
+        DEBUG_VAR (STACK_FORMAT_STRING, secondDir);
 
         int status = MoveAndPrint (lca, firstDir);
         if (status != TREE_OK)
             return status;
+
+        if (IsSameDirection (firstPath, secondPath))
+            PRINT (", ");
+        else 
+            break;
     }
 
     PRINT ("\n");
 
     return TREE_OK;
+}
+
+bool IsSameDirection (stack_t *firstPath, stack_t *secondPath)
+{
+    assert (firstPath);
+    assert (secondPath);
+
+    stackDataType firstDir  = NODE_DIR_UKNOWN;
+    stackDataType secondDir = NODE_DIR_UKNOWN;
+
+    StackTop (firstPath,  &firstDir);
+    StackTop (secondPath, &secondDir);
+
+    return firstDir == secondDir;
 }
 
 int MoveAndPrint (node_t **node, int direction)
@@ -772,11 +792,6 @@ int MoveAndPrint (node_t **node, int direction)
                     direction, NODE_DIR_LEFT, NODE_DIR_RIGHT);
         
         return TREE_ERROR_INVALID_PATH;
-    }
-    
-    if (HasBothChildren (*node))
-    {
-        PRINT (", ");
     }
     
     return TREE_OK;

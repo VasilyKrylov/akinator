@@ -1,1 +1,1 @@
-("animal"("pink"("pig"nilnil)("cat"nilnil))("Human"("Vadim"nilnil)("uknown character"nilnil)))
+("animal"("pink"("pig"nilnil)("say gav"("Vasily's pet"("Bobik"nilnil)("dog"nilnil))("cat"nilnil)))("human"("Vadim"nilnil)("uknown character"nilnil)))

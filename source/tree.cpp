@@ -12,9 +12,12 @@
 
 #include "tree.h"
 
-int TreeCountNodes (node_t *node, size_t size, size_t *nodesCount); // FIXME static
-node_t *TreeLoadNode (tree_t *tree, 
-                      char *buffer, char **curPos);
+static int TreeCountNodes      (node_t *node, size_t size, size_t *nodesCount);
+static int TreeLoadNode        (tree_t *tree, node_t **node,
+                                char *buffer, char **curPos);
+
+static int TreeLoadNodeAndFill (tree_t *tree, node_t **node,
+                                char *buffer, char **curPos);
 
 // maybe: pass varInfo here for ERROR_LOG
 node_t *NodeCtor (tree_t *tree)
@@ -208,9 +211,9 @@ int TreeLoadFromFile (tree_t *tree, const char *fileName, char **buffer, size_t 
     char *curPos = *buffer;
     DEBUG_LOG ("*buffer = \'%p\';", *buffer);
     
-    tree->root = TreeLoadNode (tree, *buffer, &curPos);
+    int status = TreeLoadNode (tree, &tree->root, *buffer, &curPos);
 
-    if (tree->root == NULL)
+    if (status != TREE_OK)
     {
         ERROR_LOG ("%s", "Error in TreeLoadNode()");
 
@@ -225,67 +228,85 @@ int TreeLoadFromFile (tree_t *tree, const char *fileName, char **buffer, size_t 
 
 // file must begin with '(', I don't see any problem with it
 // TODO: make a new function
-node_t *TreeLoadNode (tree_t *tree, // node_t * node
-                      char *buffer, char **curPos)
+int TreeLoadNode (tree_t *tree, node_t **node,
+                  char *buffer, char **curPos)
 {
     if (**curPos == '(')
     {
-        (*curPos)++;
-
-        int readBytes = 0;
-        char *data = *curPos + 1; // + 1 to get after "
-        node_t *node = NodeCtor (tree); 
-        NodeFill (node, data);
-        // node->dynamicAllocated = 0;
-
-        sscanf (*curPos, "\"%*[^\"]\"%n", &readBytes); // NOTE: make version without this sscanf
-        (*curPos)[readBytes - 1] = 0;
-
-        DEBUG_VAR ("%s", data);
-
-        *curPos += readBytes;
-
+        *node = NodeCtor (tree); 
         if (node == NULL)
-            return NULL; // FIXME: how to catch this error?
+            return TREE_ERROR_CREATING_NODE;
+
+        int status = TreeLoadNodeAndFill (tree, node, buffer, curPos);
         
-        NODE_DUMP (node, &tree->log, "Created new node - \"%s\". \ncurPos = \'%s\'", *curPos + 1, *curPos);
-
-        node->left = TreeLoadNode (tree, buffer, curPos);
-        if (node->left != NULL)
-        {
-            NODE_DUMP (node->left, &tree->log, "After creating left subtree. \ncurPos = \'%s\'", *curPos);
-        }
-        
-        node->right = TreeLoadNode (tree, buffer, curPos);
-        if (node->right != NULL)
-        {
-            NODE_DUMP (node->right, &tree->log, "After creating right subtree. \ncurPos = \'%s\'", *curPos);
-        }
-
-            
-        if (**curPos != ')')
-        {
-            ERROR_LOG ("%s", "Syntax error in tree dump file - missing closing bracket ')'");
-            ERROR_LOG ("curPos = \'%s\';", *curPos);
-        }
-
-        (*curPos)++;
-            
-        return node;
+        return status;
     }
     else if (strncmp (*curPos, "nil", sizeof("nil") - 1) == 0)
     {
         *curPos += sizeof ("nil") - 1;
 
-        return NULL;
+        *node = NULL;
+
+        return TREE_OK;
     }
     else 
     {
         ERROR_LOG ("%s", "Syntax error in tree dump file - uknown beginning of the node");
         ERROR_LOG ("curPos = \'%s\';", *curPos);
 
-        return NULL; // FIXME: how to catch this error
+        return TREE_ERROR_SYNTAX_IN_SAVE_FILE;
     }
+}
+
+int TreeLoadNodeAndFill (tree_t *tree, node_t **node,
+                         char *buffer, char **curPos)
+{
+    assert (tree);
+    assert (node);
+    assert (buffer);
+    assert (curPos);
+    assert (*curPos);
+
+    (*curPos)++; // move after '('
+
+    char *data = *curPos + 1; // + 1 to get after "
+    
+    NodeFill (*node, data);
+    
+    int readBytes = 0;
+    sscanf (*curPos, "\"%*[^\"]\"%n", &readBytes); // NOTE: make version without this sscanf
+    (*curPos)[readBytes - 1] = 0;
+
+    DEBUG_VAR ("%s", data);
+
+    *curPos += readBytes;
+    
+    NODE_DUMP (node, &tree->log, "Created new node - \"%s\". \n"
+                                 "curPos = \'%s\'", *curPos + 1, *curPos);
+
+    int status = TreeLoadNode (tree, &(*node)->left, buffer, curPos);
+    if (status != TREE_OK)
+        return status;
+
+    NODE_DUMP ((*node)->left, &tree->log, "After creating left subtree. \ncurPos = \'%s\'", *curPos);
+    
+    status = TreeLoadNode (tree, &(*node)->right, buffer, curPos);
+    if (status != TREE_OK)
+        return status;
+
+    NODE_DUMP (node->right, &tree->log, "After creating right subtree. \ncurPos = \'%s\'", *curPos);
+        
+    if (**curPos != ')')
+    {
+        ERROR_LOG ("%s", "Syntax error in tree dump file - missing closing bracket ')'");
+        ERROR_LOG ("curPos = \'%s\';", *curPos);
+
+        return TREE_ERROR_SYNTAX_IN_SAVE_FILE;
+    }
+
+    (*curPos)++;
+
+    return TREE_OK;
 }
 
 bool IsLeaf (node_t *node)
