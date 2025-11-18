@@ -2,7 +2,7 @@
 Akinator
 
 # TODO
-[  ] FIX PrintDecription !!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \
+[\*] FIX PrintDecription !!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \
 [\*] Enum for akinator errors?                          \
 [\*] Write FindCharacter()                              \
 [\*] Write CompareCharacters()                          \
